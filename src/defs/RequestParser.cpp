@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 16:59:26 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/17 01:40:52 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/20 22:49:06 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,11 +99,31 @@ void RequestParser::clen_handle(std::vector<std::string> &fileds, const std::str
 void RequestParser::ctyp_handle(std::vector<std::string> &fileds, const std::string &header)
 {
     std::string word;
+    size_t      pos;
     
     get_first_word(header, word);
     if (is_empty(word))
-        throw response_status(SC_415);
+        throw response_status(SC_400);
+    if (fileds[HR_METHOD] == "POST")
+    {
+        std::transform(word.begin(), word.end(), word.begin(), ::tolower);
+        if (word == "multipart/form-data")
+        {
+            pos = header.find("boundary=",  word.length());
+            if (pos == std::string::npos)
+                throw response_status(SC_415);
+            pos += 9;
+            fileds.push_back(header.substr(pos, header.find_first_of(" \r\n", pos) - pos));
+            fileds[HR_BONDRY] = std::string("--") + fileds[HR_BONDRY];
+            if (is_empty(fileds[HR_BONDRY]))
+                throw response_status(SC_415);
+        }
+    }
     fileds[HR_CTYP] = word;
+    // out(">>>>")
+    // out(fileds[HR_CTYP])
+    // out(fileds[HR_BONDRY])
+    // out(">>>>")
 }
 
 /******************************************************************************/
@@ -112,7 +132,6 @@ void RequestParser::ctyp_handle(std::vector<std::string> &fileds, const std::str
 void RequestParser::parse_first_line(void)
 {
     std::vector<std::string> str_sq;
-    
     get_sequence_str_v2(*_header, str_sq);
     if (str_sq.size() != 3)
         throw response_status(SC_400);
@@ -134,6 +153,7 @@ void RequestParser::parse_header(void)
         size_t p1 = _header->find_first_not_of(" ", i);
         size_t p2 = _header->find_first_of(":\r\n", p1);
         i = p2;
+        // out(&(*_header)[i])
         if ((*_header)[p2] == ':')
         {
             std::map<std::string, handler>::iterator it;

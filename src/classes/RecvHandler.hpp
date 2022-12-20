@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 12:07:27 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/16 23:09:24 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/21 00:21:36 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,12 +24,13 @@
 # include "../classes/SendHandler.hpp"
 # include "../classes/RequestParser.hpp"
 # include "../classes/RequestProcessor.hpp"
+# include "../classes/UploadHandler.hpp"
 
 class RecvHandler
 {
 
     bool                        _is_done;
-    bool                        _is_body;
+    bool                        _is_head;
     size_t                      _rlength;
     Response*                   _response;
     std::string                 _rhead;
@@ -37,12 +38,13 @@ class RecvHandler
     std::vector<ServerSet*>*    _servers;
     std::vector<std::string>    _r_fields;
     std::vector<std::string>    _s_fields;
+    std::map<int, std::string>  _err_page;
     
     public:
         RecvHandler();  
         ~RecvHandler();
         void operator()(int fd, int ndata);
-        void recv_head(int fd, int ndata);
+        void recv_head(int fd, int &ndata);
         void recv_body(int fd, int ndata);
         void set_servers(std::vector<ServerSet*>*);
         void set_response(Response*);

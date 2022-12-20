@@ -6,7 +6,7 @@
 #    By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/15 08:46:38 by eabdelha          #+#    #+#              #
-#    Updated: 2022/12/16 21:51:32 by eabdelha         ###   ########.fr        #
+#    Updated: 2022/12/19 20:39:28 by eabdelha         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -38,6 +38,7 @@ INCLUDES =	$(INC_PATH)ServerSettings.hpp	\
 			$(CLS_PATH)SendHandler.hpp		\
 			$(CLS_PATH)RequestParser.hpp		\
 			$(CLS_PATH)RequestProcessor.hpp		\
+			$(CLS_PATH)UploadHandler.hpp		\
 			
 
 SRC	=	main.cpp	\
@@ -48,6 +49,7 @@ SRC	=	main.cpp	\
 		SendHandler.cpp		\
 		RequestParser.cpp	\
 		RequestProcessor.cpp \
+		UploadHandler.cpp \
 		\
 		utility.cpp			\
 		build_response.cpp

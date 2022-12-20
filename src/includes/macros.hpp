@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/29 21:39:49 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/17 01:07:57 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/19 20:53:04 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@
 #define HR_CTYP     3
 #define HR_CNTLEN   4
 #define HR_TENCOD   5
+#define HR_BONDRY   6
 
 #define HS_STCODE   0
 #define HS_CNTLEN   1

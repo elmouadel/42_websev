@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/22 15:36:25 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/15 22:25:01 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/20 22:52:38 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,12 +105,29 @@ void get_sequence_str_v2(std::string &str, std::vector<std::string> &str_sq)
     }
 }
 
-size_t find_dcrlf(std::string str, size_t pos)
+void split_string(const std::string &str, std::vector<std::string> &str_sq, std::string charset)
+{
+    for (size_t i = 0; i < str.length(); ++i)
+    {
+        str_sq.push_back(std::string());
+        size_t _p1 = str.find_first_not_of(" ", i);
+        size_t _p2 = str.find_first_of(charset + "\"", _p1);
+        if (str[_p2] == '"')
+        {
+            _p2 = str.find_first_of("\"", _p2 + 1);
+            _p2 = str.find_first_of(charset, _p2);
+        }
+        str_sq.back() = str.substr(_p1, _p2 - _p1);
+        i = _p2;
+    }
+}
+
+size_t find_dcrlf(std::string &str, size_t pos)
 {
     size_t _ret;
 
-    if (pos > 2)
-        pos -= 2;
+    if (pos > 4)
+        pos -= 4;
     _ret = str.find("\r\n\r\n", pos);
     if (_ret != std::string::npos)
         return (str[_ret] = '\n', str[_ret + 1] = '\0', _ret + 4);

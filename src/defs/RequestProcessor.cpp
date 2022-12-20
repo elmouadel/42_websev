@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/15 22:44:42 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/17 10:37:30 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/21 00:29:25 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,18 +64,31 @@ LocationSet *RequestProcessor::get_matched_location(std::vector<ServerSet*> *ser
     }
     return (&server->_locations[0]);
 }
+/******************************************************************************/
+/*                              getters-setters                               */
+/******************************************************************************/
 
+void RequestProcessor::set_err_page(std::map<int, std::string> &err_page)
+{
+    err_page = _location->_err_page;
+}
 /******************************************************************************/
 /*                              process request                               */
 /******************************************************************************/
 
-void RequestProcessor::process_request(void)
+bool RequestProcessor::process_request(void)
 {
     (*_r_fields)[HR_URL] = _location->_root \
     + (*_r_fields)[HR_URL].substr(_location->_url_path.length(), (*_r_fields)[HR_URL].length());
     check_is_allowed_method();
     if ((*_r_fields)[HR_METHOD] == "GET")
+    {
         get_method_handler();
+        return (true);
+    }
+    else if ((*_r_fields)[HR_METHOD] == "POST")
+        return (false);
+    return (true);
 }
 
 void RequestProcessor::get_method_handler(void)

@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/15 22:44:40 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/17 01:15:33 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/21 00:29:07 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,10 +39,11 @@ class RequestProcessor
         ~RequestProcessor();
         ServerSet *get_matched_server(std::vector<ServerSet*> *server_list);
         LocationSet *get_matched_location(std::vector<ServerSet*> *server_list);
-        void process_request(void);
+        bool process_request(void);
         void get_method_handler(void);
         void get_response_body(std::string&);
         void check_is_allowed_method(void);
+        void set_err_page(std::map<int, std::string> &err_page);
 };
 
 #endif

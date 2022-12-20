@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 12:07:14 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/17 12:03:48 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/17 15:36:27 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,12 +49,9 @@ void SendHandler::set_is_done(bool _sv)
 void SendHandler::operator()(int fd, int ndata)
 {
     int wdata = 0;
-    // std::cout << "______" <<std::endl;
     do
     {
-        // std::cout << wdata << std::endl;
         _wlength += wdata = ::send(fd, (void *)(&_buf_switch[_wlength]), _buf_switch_len - _wlength, 0);
-        // std::cout << wdata << std::endl;
         if (wdata == -1) 
             throw server_error(std::string("error: send: ") + ::strerror(errno));
         if (wdata == 0) 

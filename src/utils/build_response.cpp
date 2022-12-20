@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/15 21:42:10 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/17 10:37:39 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/21 00:30:24 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,32 +21,31 @@
 #include "../includes/macros.hpp"
 #include "../../debug.h"
 
-std::map<std::string, std::string> error_pages;
+// std::map<std::string, std::string> error_pages;
 
-bool init_map_error_page(std::map<std::string, std::string> &vmap)
-{
-    vmap[SC_201] = "/Users/eabdelha/Desktop/v2_webserv/error_pages/ep_SC_201.html";
-    vmap[SC_301] = "/Users/eabdelha/Desktop/v2_webserv/error_pages/ep_SC_301.html";
-    vmap[SC_302] = "/Users/eabdelha/Desktop/v2_webserv/error_pages/ep_SC_302.html";
-    vmap[SC_304] = "/Users/eabdelha/Desktop/v2_webserv/error_pages/ep_SC_304.html";
-    vmap[SC_307] = "/Users/eabdelha/Desktop/v2_webserv/error_pages/ep_SC_307.html";
-    vmap[SC_308] = "/Users/eabdelha/Desktop/v2_webserv/error_pages/ep_SC_308.html";
-    vmap[SC_400] = "/Users/eabdelha/Desktop/v2_webserv/error_pages/ep_SC_400.html";
-    vmap[SC_403] = "/Users/eabdelha/Desktop/v2_webserv/error_pages/ep_SC_403.html";
-    vmap[SC_404] = "/Users/eabdelha/Desktop/v2_webserv/error_pages/ep_SC_404.html";
-    vmap[SC_405] = "/Users/eabdelha/Desktop/v2_webserv/error_pages/ep_SC_405.html";
-    vmap[SC_409] = "/Users/eabdelha/Desktop/v2_webserv/error_pages/ep_SC_409.html";
-    vmap[SC_411] = "/Users/eabdelha/Desktop/v2_webserv/error_pages/ep_SC_411.html";
-    vmap[SC_413] = "/Users/eabdelha/Desktop/v2_webserv/error_pages/ep_SC_413.html";
-    vmap[SC_414] = "/Users/eabdelha/Desktop/v2_webserv/error_pages/ep_SC_414.html";
-    vmap[SC_415] = "/Users/eabdelha/Desktop/v2_webserv/error_pages/ep_SC_415.html";
-    vmap[SC_500] = "/Users/eabdelha/Desktop/v2_webserv/error_pages/ep_SC_500.html";
-    vmap[SC_501] = "/Users/eabdelha/Desktop/v2_webserv/error_pages/ep_SC_501.html";
-    vmap[SC_505] = "/Users/eabdelha/Desktop/v2_webserv/error_pages/ep_SC_505.html";
-    return (false);
-}
-
-bool dummy3 = init_map_error_page(error_pages);
+// void init_map_error_page(std::map<int, std::string> &err_page)
+// {
+//     if (!error_pages.empty())
+//         return;
+//     error_pages[SC_201] = "./error_pages/ep_SC_201.html";
+//     error_pages[SC_301] = "./error_pages/ep_SC_301.html";
+//     error_pages[SC_302] = "./error_pages/ep_SC_302.html";
+//     error_pages[SC_304] = "./error_pages/ep_SC_304.html";
+//     error_pages[SC_307] = "./error_pages/ep_SC_307.html";
+//     error_pages[SC_308] = "./error_pages/ep_SC_308.html";
+//     error_pages[SC_400] = "./error_pages/ep_SC_400.html";
+//     error_pages[SC_403] = "./error_pages/ep_SC_403.html";
+//     error_pages[SC_404] = "./error_pages/ep_SC_404.html";
+//     error_pages[SC_405] = "./error_pages/ep_SC_405.html";
+//     error_pages[SC_409] = "./error_pages/ep_SC_409.html";
+//     error_pages[SC_411] = "./error_pages/ep_SC_411.html";
+//     error_pages[SC_413] = "./error_pages/ep_SC_413.html";
+//     error_pages[SC_414] = "./error_pages/ep_SC_414.html";
+//     error_pages[SC_415] = "./error_pages/ep_SC_415.html";
+//     error_pages[SC_500] = "./error_pages/ep_SC_500.html";
+//     error_pages[SC_501] = "./error_pages/ep_SC_501.html";
+//     error_pages[SC_505] = "./error_pages/ep_SC_505.html";
+// }
 
 void build_header(std::string &header, std::vector<std::string> &s_fields)
 {
@@ -78,9 +77,9 @@ void build_header(std::string &header, std::vector<std::string> &s_fields)
     header.append("\r\n");
 }
 
-void build_body(Response &response, std::vector<std::string> &s_fields)
+void build_body(Response &response, std::vector<std::string> &s_fields, std::map<int, std::string> err_page)
 {
-    std::string &file = error_pages[s_fields[HS_STCODE]];
+    std::string &file = err_page[stoi(s_fields[HS_STCODE].substr(0, 3))];
     int         fd;
     struct stat st;
     
@@ -90,7 +89,8 @@ void build_body(Response &response, std::vector<std::string> &s_fields)
     if (fstat(fd, &st) < 0)
         throw server_error(std::string("error: fstat: ") + ::strerror(errno));
     response._body_len = st.st_size;
-
+    if (!response._body_len)
+        return;
     response._body = (char*)mmap(NULL, response._body_len, PROT_READ, MAP_PRIVATE, fd, 0);
     close(fd);
     if (response._body == MAP_FAILED)
