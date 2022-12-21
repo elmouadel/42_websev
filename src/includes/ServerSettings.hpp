@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 21:59:41 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/21 00:10:28 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/21 09:44:57 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,34 +17,19 @@
 # include <map>
 # include <vector>
 # include <string>
-
-
-struct RedirectSet
-{
-    std::string _old_path;
-    std::string _new_path;
-    int         _err_code;
-    RedirectSet() : _err_code(0) {}
-    ~RedirectSet() {}
-    bool operator==(RedirectSet &rhs)
-    {
-        return (_err_code == rhs._err_code && 
-                _new_path == rhs._new_path && 
-                _old_path == rhs._old_path);
-    }
-};
+# include <utility>
 
 struct LocationSet
 {
     std::map<int, std::string>  _err_page;
-    std::vector<RedirectSet>    _redirect;
+    std::pair<std::string, int> _redirect;
     std::set<std::string>       _acc_mtod;
     std::set<std::string>       _index;
     std::string                 _root;
     std::string                 _url_path;
+    size_t                      _cb_max_size;
     bool                        _autoindex;
-    long                        _cb_max_size;
-    LocationSet() : _autoindex(0), _cb_max_size(0) 
+    LocationSet() : _cb_max_size(1000000000), _autoindex(0)
     {
         _err_page[201] = "./error_pages/ep_SC_201.html";
         _err_page[301] = "./error_pages/ep_SC_301.html";

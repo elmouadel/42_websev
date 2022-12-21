@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/15 21:42:10 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/21 00:30:24 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/21 00:38:40 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,32 +20,6 @@
 #include "../includes/utils.hpp"
 #include "../includes/macros.hpp"
 #include "../../debug.h"
-
-// std::map<std::string, std::string> error_pages;
-
-// void init_map_error_page(std::map<int, std::string> &err_page)
-// {
-//     if (!error_pages.empty())
-//         return;
-//     error_pages[SC_201] = "./error_pages/ep_SC_201.html";
-//     error_pages[SC_301] = "./error_pages/ep_SC_301.html";
-//     error_pages[SC_302] = "./error_pages/ep_SC_302.html";
-//     error_pages[SC_304] = "./error_pages/ep_SC_304.html";
-//     error_pages[SC_307] = "./error_pages/ep_SC_307.html";
-//     error_pages[SC_308] = "./error_pages/ep_SC_308.html";
-//     error_pages[SC_400] = "./error_pages/ep_SC_400.html";
-//     error_pages[SC_403] = "./error_pages/ep_SC_403.html";
-//     error_pages[SC_404] = "./error_pages/ep_SC_404.html";
-//     error_pages[SC_405] = "./error_pages/ep_SC_405.html";
-//     error_pages[SC_409] = "./error_pages/ep_SC_409.html";
-//     error_pages[SC_411] = "./error_pages/ep_SC_411.html";
-//     error_pages[SC_413] = "./error_pages/ep_SC_413.html";
-//     error_pages[SC_414] = "./error_pages/ep_SC_414.html";
-//     error_pages[SC_415] = "./error_pages/ep_SC_415.html";
-//     error_pages[SC_500] = "./error_pages/ep_SC_500.html";
-//     error_pages[SC_501] = "./error_pages/ep_SC_501.html";
-//     error_pages[SC_505] = "./error_pages/ep_SC_505.html";
-// }
 
 void build_header(std::string &header, std::vector<std::string> &s_fields)
 {

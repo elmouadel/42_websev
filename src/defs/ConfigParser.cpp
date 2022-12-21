@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/21 21:42:54 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/14 10:27:45 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/21 10:40:26 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,19 +96,14 @@ void ConfigParser::redirect_handle(LocationSet& location_set, std::string &line)
     std::vector<std::string> sq_str;
 
     get_sequence_str(line, sq_str);
-    if (sq_str.size() != 3)
+    if (sq_str.size() != 2)
         throw err_token_args();
-
-    RedirectSet redirect_set;
-    redirect_set._old_path = sq_str[0];
-    redirect_set._new_path = sq_str[1];
-    if (sq_str[2].find_first_not_of("0123456789") != std::string::npos)
+        
+    if (sq_str[1].find_first_not_of("0123456789") != std::string::npos)
         throw err_token_args();
-    redirect_set._err_code = std::stoi(sq_str[2]);
-    for (size_t i = 0; i < location_set._redirect.size(); ++i)
-        if (redirect_set.operator==(location_set._redirect[i]))
-            return;
-    location_set._redirect.push_back(redirect_set);
+    if (sq_str[0][sq_str[0].length() - 1] != '/')
+        sq_str[0].push_back('/');
+    location_set._redirect = make_pair(sq_str[0], std::stoi(sq_str[1]));
 }
 void ConfigParser::index_handle(LocationSet& location_set, std::string &line)
 {
@@ -183,6 +178,8 @@ void ConfigParser::url_path_handle(std::string &line_hol)
             get_sequence_str(line, sq_str);
             if (sq_str.size() != 1)
                 throw err_token_args();
+            if (sq_str[0][sq_str[0].length() - 1] != '/')
+                sq_str[0].push_back('/');
             _server_set.back()._locations.back()._url_path = sq_str[0];
             return;
         }
@@ -401,12 +398,7 @@ void ConfigParser::print(void)
                 std::cout << "\n      " << it->first << ' ' << it->second;
         
             std::cout << "\nredirect: ";
-            for (size_t k = 0; k < _server_set[i]._locations[j]._redirect.size(); ++k)
-            {
-                std::cout << "\n      " << _server_set[i]._locations[j]._redirect[k]._old_path;
-                std::cout << "  " << _server_set[i]._locations[j]._redirect[k]._new_path;
-                std::cout << "  " << _server_set[i]._locations[j]._redirect[k]._err_code;
-            }
+                std::cout << "\n      " << _server_set[i]._locations[j]._redirect.first << "  " << _server_set[i]._locations[j]._redirect.second;
             std::cout << '\n';
             std::cout << "------------------------------------------------------\n";
         }
