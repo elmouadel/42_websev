@@ -6,12 +6,12 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 16:59:26 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/21 08:57:15 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/27 18:24:01 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../classes/RequestParser.hpp"
-#include "../../debug.h"
+#include "../../ztrash/debug.h"
 
 /******************************************************************************/
 /*                          init static variables                             */
@@ -109,12 +109,11 @@ void RequestParser::ctyp_handle(std::vector<std::string> &fileds, const std::str
         std::transform(word.begin(), word.end(), word.begin(), ::tolower);
         if (word == "multipart/form-data")
         {
-            pos = header.find("boundary=",  word.length());
+            pos = header.find("boundary=", word.length());
             if (pos == std::string::npos)
                 throw response_status(SC_415);
             pos += 9;
-            fileds.push_back(header.substr(pos, header.find_first_of(" \r\n", pos) - pos));
-            fileds[HR_BONDRY] = std::string("--") + fileds[HR_BONDRY];
+            fileds[HR_BONDRY] = std::string("--") + header.substr(pos, header.find_first_of(" \r\n", pos) - pos);
             if (is_empty(fileds[HR_BONDRY]))
                 throw response_status(SC_415);
         }
@@ -147,7 +146,6 @@ void RequestParser::parse_first_line(void)
 
 void RequestParser::parse_header(void)
 {
-    parse_first_line();
     for (size_t i = 0; (*_header)[i]; ++i)
     {
         size_t p1 = _header->find_first_not_of(" ", i);

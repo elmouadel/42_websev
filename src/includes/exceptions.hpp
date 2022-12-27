@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/24 17:34:06 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/16 22:05:26 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/24 16:44:41 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define EXCEPTIONS_HPP
 
 # include <exception>
+# include <sys/errno.h>
 
 class failed_open : public std::exception
 {

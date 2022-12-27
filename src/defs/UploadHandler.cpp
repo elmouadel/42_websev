@@ -6,12 +6,12 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/18 20:55:13 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/20 23:56:44 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/27 18:22:22 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../classes/UploadHandler.hpp"
-#include "../../debug.h"
+#include "../../ztrash/debug.h"
 
 /******************************************************************************/
 /*                            construct-destruct                              */
@@ -42,12 +42,14 @@ void UploadHandler::upload_multipart_data(void)
     
     dcrlf = 0;
     end = 0;
+
     while (end != std::string::npos)
     {
         std::string filename;
         dcrlf = find_dcrlf(*_body, end);
         if (!parse_sub_header(_body->substr(end, dcrlf - end), filename))
             throw response_status(SC_201);
+        
         end = write_data_to_file(filename, dcrlf);
     }
     throw response_status(SC_400);
@@ -73,7 +75,9 @@ bool UploadHandler::parse_sub_header(const std::string &sub_header, std::string 
                 
             std::transform(key_word.begin(), key_word.end(), key_word.begin(), ::tolower);
             if (key_word == "content-disposition")
+            {
                 filename = content_disposition_handler(sub_header.substr(p2 + 1, sub_header.find_first_of("\r\n", p2) - p2));
+            }
             // else if (key_word == "content-type")
             //     content_type_handler(std::string(&sub_header[p2 + 1]));
             i = sub_header.find_first_of("\n", p2);
@@ -119,11 +123,12 @@ std::string UploadHandler::content_disposition_handler(const std::string& str)
 /******************************************************************************/
 size_t UploadHandler::write_data_to_file(std::string& filename, size_t start)
 {
-    filename = (*_r_fields)[HR_URL] + "/" + filename;
+    filename = (*_r_fields)[HR_RURL] + "/" + filename;
     
     std::ofstream   out_file(filename);
     size_t          end;
     
+    out (filename)
     if (!out_file.is_open())
        throw server_error(std::string(std::string("error: open: ") + ::strerror(errno)));
     end = _body->find((*_r_fields)[HR_BONDRY], start);

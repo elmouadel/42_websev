@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 21:59:41 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/21 09:44:57 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/27 16:00:33 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,14 +21,16 @@
 
 struct LocationSet
 {
-    std::map<int, std::string>  _err_page;
-    std::pair<std::string, int> _redirect;
-    std::set<std::string>       _acc_mtod;
-    std::set<std::string>       _index;
-    std::string                 _root;
-    std::string                 _url_path;
-    size_t                      _cb_max_size;
-    bool                        _autoindex;
+    std::map<std::string, std::string>  _cgi;
+    std::map<int, std::string>          _err_page;
+    std::pair<std::string, int>         _redirect;
+    std::set<std::string>               _acc_mtod;
+    std::set<std::string>               _index;
+    std::string                         _root;
+    std::string                         _url_path;
+    std::string                         _upload_dir;
+    size_t                              _cb_max_size;
+    bool                                _autoindex;
     LocationSet() : _cb_max_size(1000000000), _autoindex(0)
     {
         _err_page[201] = "./error_pages/ep_SC_201.html";

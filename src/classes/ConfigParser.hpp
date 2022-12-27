@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 21:59:21 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/15 21:43:11 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/27 16:04:40 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,11 +41,13 @@ class ConfigParser
         
         void name_handle(std::string&);
         void listen_handle(std::string&);
+        void cgi_handle(LocationSet&, std::string&);
         void err_page_handle(LocationSet&, std::string&);
         void redirect_handle(LocationSet&, std::string&);
         void index_handle(LocationSet&, std::string&);
         void acc_mtod_handle(LocationSet&, std::string&);
         void root_handle(LocationSet&, std::string&);
+        void upload_dir_handle(LocationSet&, std::string&);
         void cb_max_size_handle(LocationSet&, std::string&);
         void autoindex_handle(LocationSet&, std::string&);
         void url_path_handle(std::string&);

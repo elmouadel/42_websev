@@ -6,22 +6,24 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 12:10:10 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/21 12:25:14 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/27 18:32:02 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../classes/RecvHandler.hpp"
-#include "../../debug.h"
+#include "../../ztrash/debug.h"
 
 /******************************************************************************/
 /*                            construct-destruct                              */
 /******************************************************************************/
 
-RecvHandler::RecvHandler() : _is_done(0), _is_head(1), _rlength(0)
+RecvHandler::RecvHandler() : _is_done(0), _is_head(1), _rlength(0), 
+    _servers(nullptr), _location(nullptr)
 {
     _rhead.resize(BUF_SIZE);
-    _r_fields.resize(6);
-    _s_fields.resize(5);
+    _r_fields.resize(9);
+    _s_fields.resize(6);
+    _s_fields[HS_LCRLF] = "\r\n";
 }
 RecvHandler::~RecvHandler()
 {
@@ -66,7 +68,7 @@ LocationSet *RecvHandler::get_matched_location(std::vector<ServerSet*> *server_l
                     _r_fields[HR_URL].insert(0, server->_locations[i]._redirect.first);
                     
                     _s_fields[HS_LOCATN] = _r_fields[HR_URL];
-                    out (_s_fields[HS_LOCATN] + "<<")
+                    // out (_s_fields[HS_LOCATN] + "<<")
                     if (server->_locations[i]._redirect.second == 301)
                         throw response_status(SC_301);
                     else
@@ -75,12 +77,12 @@ LocationSet *RecvHandler::get_matched_location(std::vector<ServerSet*> *server_l
                 return (&server->_locations[i]);
             }
         }
-        if (url[url.length() - 1] == '/')
-            url.pop_back();
         size_t pos = url.find_last_of("/");
+        if (pos == 0 && url.length() > 1)
+            pos++;
         if (pos == std::string::npos)
             pos = 0;
-        url = url.substr(0, pos + 1);
+        url = url.substr(0, pos);
     }
     return (&server->_locations[0]);
 }
@@ -142,8 +144,10 @@ void RecvHandler::recv_head(int fd, int &ndata)
         try
         {
             RequestParser request_parser(&_rhead, &_r_fields);
-            request_parser.parse_header();
+            
+            request_parser.parse_first_line();
             _location = get_matched_location(_servers);
+            request_parser.parse_header();
             
             RequestProcessor request_processor(_response, &_r_fields, &_s_fields, _location);
             _is_head = _is_done = request_processor.process_request();
@@ -168,7 +172,7 @@ void RecvHandler::recv_head(int fd, int &ndata)
             build_header(_response->_head, _s_fields);
             _is_done = true;
         }
-        if (!_is_head)
+        if (!_is_head && !_r_fields[HR_CNTLEN].empty())
             _rbody.resize(stoul(_r_fields[HR_CNTLEN]));
     }
 }
@@ -191,8 +195,26 @@ void RecvHandler::recv_body(int fd, int ndata)
         {
             try
             {
-                UploadHandler uploader(&_rbody, &_r_fields);
-                uploader.select_post_handler();
+                // out (_rbody)
+                if (is_cgi(_r_fields, _location->_cgi))
+                {
+                    CGIExecutor cgi(_r_fields, *_location);
+
+                    cgi.set_body(&_rbody);
+                    cgi.execute_cgi();
+                    mmap_file(*_response, "/tmp/cgi_tmp_file");
+                    _s_fields[HS_LCRLF] = "";
+                    _s_fields[HS_STCODE] = SC_201;
+                    _s_fields[HS_CNTLEN] = std::to_string(_response->_body_len);
+                }
+                else
+                {
+                    UploadHandler uploader(&_rbody, &_r_fields);
+                    _r_fields[HR_RURL] = _location->_upload_dir;
+                    uploader.select_post_handler();
+                }
+                build_header(_response->_head, _s_fields);
+                _is_done = true;
             }
             catch (const server_error &e)
             {

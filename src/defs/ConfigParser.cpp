@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/21 21:42:54 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/21 10:40:26 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/27 16:05:15 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,13 @@ ConfigParser::ConfigParser(const char* _s, std::vector<ServerSet>& _v)
 
     _assign_handl_server["listen"] = &ConfigParser::listen_handle;
     _assign_handl_server["server_name"] = &ConfigParser::name_handle;
+    _assign_handl_location["cgi"] = &ConfigParser::cgi_handle;
     _assign_handl_location["root"] = &ConfigParser::root_handle;
     _assign_handl_location["index"] = &ConfigParser::index_handle;
     _assign_handl_location["redirect"] = &ConfigParser::redirect_handle;
     _assign_handl_location["autoindex"] = &ConfigParser::autoindex_handle;
     _assign_handl_location["error_page"] = &ConfigParser::err_page_handle;
+    _assign_handl_location["upload_dir"] = &ConfigParser::upload_dir_handle;
     _assign_handl_location["accepted_methods"] = &ConfigParser::acc_mtod_handle;
     _assign_handl_location["client_body_max_size"] = &ConfigParser::cb_max_size_handle;
 }
@@ -80,9 +82,19 @@ void ConfigParser::name_handle(std::string &line)
 /******************************************************************************/
 /*                           location handlers methods                        */
 /******************************************************************************/
+void ConfigParser::cgi_handle(LocationSet& location_set, std::string &line)
+{
+    std::vector<std::string> sq_str;
+    
+    get_sequence_str(line, sq_str);
+    if (sq_str.size() != 2)
+        throw err_token_args();
+    location_set._cgi[sq_str[0]] = sq_str[1];
+}
 void ConfigParser::err_page_handle(LocationSet& location_set, std::string &line)
 {
     std::vector<std::string> sq_str;
+    
     get_sequence_str(line, sq_str);
     if (sq_str.size() != 2)
         throw err_token_args();
@@ -132,6 +144,15 @@ void ConfigParser::root_handle(LocationSet& location_set, std::string &line)
         throw err_token_args();
     location_set._root = sq_str[0];
 }
+void ConfigParser::upload_dir_handle(LocationSet& location_set, std::string &line)
+{
+    std::vector<std::string> sq_str;
+
+    get_sequence_str(line, sq_str);
+    if (sq_str.size() != 1)
+        throw err_token_args();
+    location_set._upload_dir = sq_str[0];
+}
 void ConfigParser::cb_max_size_handle(LocationSet& location_set, std::string &line)
 {
     std::vector<std::string> sq_str;
@@ -178,8 +199,9 @@ void ConfigParser::url_path_handle(std::string &line_hol)
             get_sequence_str(line, sq_str);
             if (sq_str.size() != 1)
                 throw err_token_args();
-            if (sq_str[0][sq_str[0].length() - 1] != '/')
-                sq_str[0].push_back('/');
+            // if (sq_str[0][sq_str[0].length() - 1] != '/')
+            //     sq_str[0].push_back('/');
+            // std::cout << "url_path: " << sq_str[0] << "|" << std::endl;
             _server_set.back()._locations.back()._url_path = sq_str[0];
             return;
         }

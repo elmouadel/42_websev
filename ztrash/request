@@ -1,0 +1,49 @@
+POST /upload HTTP/1.1
+Host: 127.0.0.1:8082
+Connection: keep-alive
+Content-Length: 1416
+Cache-Control: max-age=0
+sec-ch-ua: "Chromium";v="106", "Google Chrome";v="106", "Not;A=Brand";v="99"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "macOS"
+Upgrade-Insecure-Requests: 1
+Origin: http://127.0.0.1:8082
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundarygSKcAk4a4XQWgBuD
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://127.0.0.1:8082/upl.html
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US,en;q=0.9,fr;q=0.8
+
+------WebKitFormBoundarygSKcAk4a4XQWgBuD
+Content-Disposition: form-data; name="uploadedfile[]"; filename="debug.h"
+Content-Type: application/octet-stream
+
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   debug.h                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/12/16 08:58:30 by eabdelha          #+#    #+#             */
+/*   Updated: 2022/12/16 08:59:48 by eabdelha         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#define out(_s) std::cout << _s << std::endl;
+
+#endif
+------WebKitFormBoundarygSKcAk4a4XQWgBuD
+Content-Disposition: form-data; name="uploadedfile[]"; filename="debug.hpp"
+Content-Type: application/octet-stream
+
+/* ************************************************************************** */
+------WebKitFormBoundarygSKcAk4a4XQWgBuD--

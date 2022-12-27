@@ -6,11 +6,12 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/22 15:36:25 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/20 22:52:38 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/27 18:34:42 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/utils.hpp"
+#include "../../ztrash/debug.h"
 
 inline bool is_space(char c)
 {
@@ -135,6 +136,44 @@ size_t find_dcrlf(std::string &str, size_t pos)
     if (_ret != std::string::npos)
         return (str[_ret] = '\n', str[_ret + 1] = '\0', _ret + 2);
     return (std::string::npos);
+}
+
+std::string get_file_extention(const std::string &file)
+{
+    size_t pos;
+    
+    pos = file.find_last_of(".");
+    if (pos != std::string::npos)
+    {
+        std::string ext;
+
+        ext = file.substr(pos + 1, file.length() - pos - 1);
+        return (ext);
+    }
+    return (std::string());
+}
+
+bool is_cgi(std::vector<std::string> r_fields, std::map<std::string, std::string> cgi)
+{
+    size_t      pos;
+    std::string ext;
+    
+    pos = r_fields[HR_RURL].find_last_of("?");
+    if (pos != std::string::npos)
+    {
+        r_fields[HR_QUERIES] = r_fields[HR_RURL].substr(pos + 1, r_fields[HR_RURL].length() - pos - 1);
+        r_fields[HR_RURL] = r_fields[HR_RURL].substr(0, pos);
+    }
+    ext = get_file_extention(r_fields[HR_RURL]);
+    if (!ext.empty())
+    {
+        std::map<std::string, std::string>::iterator it;
+
+        it = cgi.find(ext);
+        if (it != cgi.end())
+            return (true);
+    }
+    return (false);
 }
 
 std::string	get_date(void)

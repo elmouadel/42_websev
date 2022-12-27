@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/29 21:39:49 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/19 20:53:04 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/27 10:59:46 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,17 +26,21 @@
 /******************************************************************************/
 #define HR_METHOD   0
 #define HR_URL      1
-#define HR_HOST     2
-#define HR_CTYP     3
-#define HR_CNTLEN   4
-#define HR_TENCOD   5
-#define HR_BONDRY   6
+#define HR_RURL     2
+#define HR_HOST     3
+#define HR_CTYP     4
+#define HR_CNTLEN   5
+#define HR_TENCOD   6
+#define HR_BONDRY   7
+#define HR_QUERIES  8
 
 #define HS_STCODE   0
 #define HS_CNTLEN   1
 #define HS_LOCATN   2
 #define HS_ALLOWD   3
-// #define HS_LMODIF   4
+#define HS_CTYP     4
+#define HS_LCRLF    5
+// #define HS_LMODIF   5
 
 /******************************************************************************/
 /*                         HTTP response status codes                         */
@@ -60,6 +64,26 @@
 #define SC_500 "500 Internal Server Error"
 #define SC_501 "501 Not Implemented"
 #define SC_505 "505 HTTP Version Not Supported"
+/******************************************************************************/
+/*                              CGI Variable Name                             */
+/******************************************************************************/
+#define ENV_CONTENT_TYPE 0
+#define ENV_CONTENT_LENGTH 1
+#define ENV_PATH_INFO 2
+#define ENV_QUERY_STRING 3
+#define ENV_REMOTE_ADDR 4
+#define ENV_REMOTE_PORT 5
+#define ENV_REQUEST_METHOD 6
+#define ENV_SCRIPT_FILENAME 7
+#define ENV_SCRIPT_NAME 8
+#define ENV_SERVER_NAME 9
+#define ENV_SERVER_PORT 10
+#define ENV_SERVER_SOFTWARE 11
+#define ENV_SERVER_PROTOCOL 12
+#define ENV_GATEWAY_INTERFACE 13
+#define ENV_REDIRECT_STATUS 13
+#define ENV_PATH_TRANSLATED 14
+
 
 
 

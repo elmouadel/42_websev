@@ -34,6 +34,10 @@ void        split_string(const std::string &str, std::vector<std::string> &str_s
 size_t      find_dcrlf(std::string &str, size_t pos);
 void        build_header(std::string &header, std::vector<std::string> &s_fields);
 void        build_body(Response &response, std::vector<std::string> &s_fields, std::map<int, std::string> err_page);
+bool        is_cgi(std::vector<std::string> r_fields, std::map<std::string, std::string> cgi);
+std::string get_file_extention(const std::string &file);
+std::string get_content_type(const char *file);
+void        mmap_file(Response &response, const char *file);
 std::string get_date(void);
 
 #endif

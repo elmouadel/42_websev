@@ -6,12 +6,12 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/15 22:44:42 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/21 23:11:43 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/27 18:08:48 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../classes/RequestProcessor.hpp"
-#include "../../debug.h"
+#include "../../ztrash/debug.h"
 
 /******************************************************************************/
 /*                            construct-destruct                              */
@@ -22,48 +22,15 @@ RequestProcessor::RequestProcessor(Response* _cv1, std::vector<std::string>* _cv
     : _response(_cv1), _r_fields(_cv2), _s_fields(_cv3), _location(_cv4)
     
 {
+    if (!(*_r_fields)[HR_CNTLEN].empty() && stoul((*_r_fields)[HR_CNTLEN]) > _location->_cb_max_size)
+        throw response_status (SC_413);
+    (*_r_fields)[HR_RURL] = _location->_root + "/" \
+    + (*_r_fields)[HR_URL].substr(_location->_url_path.length(), (*_r_fields)[HR_URL].length());
+    check_is_allowed_method();
 }
 RequestProcessor::~RequestProcessor()
 {
 }
-
-// ServerSet *RequestProcessor::get_matched_server(std::vector<ServerSet*> *server_list)
-// {
-
-//     if (server_list->size() != 1)
-//     {
-//         for (size_t i = 0; i < server_list->size(); ++i)
-//         {
-//             std::set<std::string>::iterator it;
-//             it = (*server_list)[i]->_server_name.find((*_r_fields)[HR_HOST]);
-//             if (it != (*server_list)[i]->_server_name.end())
-//                 return ((*server_list)[i]);
-//         }
-//     }
-//     return ((*server_list)[0]);
-// }
-
-// LocationSet *RequestProcessor::get_matched_location(std::vector<ServerSet*> *server_list)
-// {
-//     ServerSet   *server;
-//     std::string url;
-
-//     server = get_matched_server(server_list);
-//     url = (*_r_fields)[HR_URL];
-//     while (url.length())
-//     {
-//         for (size_t i = 1; i < server->_locations.size(); ++i)
-//         {
-//             if (url == server->_locations[i]._url_path)
-//                 return (&server->_locations[i]);
-//         }
-//         size_t pos = url.find_last_of("/");
-//         if (pos == std::string::npos)
-//             pos = 0;
-//         url = url.substr(0, pos);
-//     }
-//     return (&server->_locations[0]);
-// }
 
 /******************************************************************************/
 /*                              process request                               */
@@ -71,11 +38,6 @@ RequestProcessor::~RequestProcessor()
 
 bool RequestProcessor::process_request(void)
 {
-    if (!(*_r_fields)[HR_CNTLEN].empty() && stoul((*_r_fields)[HR_CNTLEN]) > _location->_cb_max_size)
-        throw response_status (SC_413);
-    _url_path = _location->_root \
-    + (*_r_fields)[HR_URL].substr(_location->_url_path.length(), (*_r_fields)[HR_URL].length());
-    check_is_allowed_method();
     if ((*_r_fields)[HR_METHOD] == "GET")
     {
         get_method_handler();
@@ -89,12 +51,15 @@ bool RequestProcessor::process_request(void)
 void RequestProcessor::get_method_handler(void)
 {
     struct stat file_info;
-
-    if (stat(_url_path.data(), &file_info) == 0)
+    
+    if (stat((*_r_fields)[HR_RURL].data(), &file_info) == 0)
     {
         if (file_info.st_mode & S_IFREG)
         {
-            get_response_body(_url_path);
+            if (::is_cgi(*_r_fields, _location->_cgi))
+                get_cgi_response_body();
+            else
+                get_response_body((*_r_fields)[HR_RURL].data());
             return;
         }
         else if (file_info.st_mode & S_IFDIR) 
@@ -102,13 +67,16 @@ void RequestProcessor::get_method_handler(void)
             std::set<std::string>::iterator it = _location->_index.begin();
             for (; it != _location->_index.end(); ++it)
             {
-                std::string str(_url_path);
+                std::string str((*_r_fields)[HR_RURL]);
                 str.append(*it);
                 if (stat(str.data(), &file_info) == -1)
                     continue;
                 if (file_info.st_mode & S_IFREG)
                 {
-                    get_response_body(str);
+                    if (::is_cgi(*_r_fields, _location->_cgi))
+                        get_cgi_response_body();
+                    else
+                        get_response_body(str.data());
                     return;
                 }
             }
@@ -123,26 +91,22 @@ void RequestProcessor::get_method_handler(void)
         
 }
 
-void RequestProcessor::get_response_body(std::string &file)
+void RequestProcessor::get_response_body(const char *file)
 {
-    int         fd;
-    struct stat st;
-    
-    fd = open(file.data(), O_RDONLY);
-    if (fd == -1) 
-        throw server_error(std::string("error: open: ") + ::strerror(errno));
-    if (fstat(fd, &st) < 0)
-        throw server_error(std::string("error: fstat: ") + ::strerror(errno));
-    _response->_body_len = st.st_size;
-    _response->_body = (char*)mmap(NULL, _response->_body_len, PROT_READ, MAP_PRIVATE, fd, 0);
-    close(fd);
-    if (_response->_body == MAP_FAILED)
-        throw server_error(std::string("error: mmap: ") + ::strerror(errno));
-    _response->_is_mapped = true;
+    mmap_file(*_response, file);
     (*_s_fields)[HS_STCODE] = SC_200;
     (*_s_fields)[HS_CNTLEN] = std::to_string(_response->_body_len);
+    (*_s_fields)[HS_CTYP] = get_content_type(file);
 }
 
+void RequestProcessor::get_cgi_response_body(void)
+{
+    CGIExecutor cgi((*_r_fields), *_location);
+
+    cgi.execute_cgi();
+    get_response_body("/tmp/cgi_tmp_file");
+    (*_s_fields)[HS_LCRLF] = "";
+}
 /******************************************************************************/
 /*                                tests checks                                */
 /******************************************************************************/
@@ -161,7 +125,6 @@ void RequestProcessor::check_is_allowed_method(void)
                 if (++it != _location->_acc_mtod.end())
                     (*_s_fields)[HS_ALLOWD].append(", ");
             }
-                
             throw response_status(SC_405);
         }
     }
@@ -176,7 +139,7 @@ void RequestProcessor::list_directory(void)
     struct dirent*  entry;
     std::string     flist;
 
-    dir = opendir(_url_path.data());
+    dir = opendir((*_r_fields)[HR_RURL].data());
     if (!dir)
         throw server_error(std::string("error: opendir: ") + ::strerror(errno));
     if ((*_r_fields)[HR_URL].back() != '/')

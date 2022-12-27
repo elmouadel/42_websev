@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 12:07:27 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/21 09:22:46 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/26 22:15:13 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 # include "../classes/RequestParser.hpp"
 # include "../classes/RequestProcessor.hpp"
 # include "../classes/UploadHandler.hpp"
+# include "../classes/CGIExecutor.hpp"
 
 class RecvHandler
 {
@@ -48,8 +49,8 @@ class RecvHandler
         void recv_body(int fd, int ndata);
         void set_servers(std::vector<ServerSet*>*);
         void set_response(Response*);
-        bool get_is_done(void);
         void set_is_done(bool);
+        bool get_is_done(void);
         ServerSet *get_matched_server(std::vector<ServerSet*> *server_list);
         LocationSet *get_matched_location(std::vector<ServerSet*> *server_list);
 };
