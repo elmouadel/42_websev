@@ -6,11 +6,11 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/22 15:36:25 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/27 18:34:42 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/29 17:58:34 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/utils.hpp"
+#include "../incl/utils.hpp"
 #include "../../ztrash/debug.h"
 
 inline bool is_space(char c)
@@ -103,23 +103,6 @@ void get_sequence_str_v2(std::string &str, std::vector<std::string> &str_sq)
         size_t _p2 = str.find_first_of(" \r\n", _p1);
         str_sq.back() = str.substr(_p1, _p2 - _p1);
         i = _p2 - 1;
-    }
-}
-
-void split_string(const std::string &str, std::vector<std::string> &str_sq, std::string charset)
-{
-    for (size_t i = 0; i < str.length(); ++i)
-    {
-        str_sq.push_back(std::string());
-        size_t _p1 = str.find_first_not_of(" ", i);
-        size_t _p2 = str.find_first_of(charset + "\"", _p1);
-        if (str[_p2] == '"')
-        {
-            _p2 = str.find_first_of("\"", _p2 + 1);
-            _p2 = str.find_first_of(charset, _p2);
-        }
-        str_sq.back() = str.substr(_p1, _p2 - _p1);
-        i = _p2;
     }
 }
 

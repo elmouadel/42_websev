@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 21:59:21 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/27 16:04:40 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/29 17:58:34 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,9 @@
 # include <string>
 # include <fstream>
 # include <iostream>
-# include "../includes/ServerSettings.hpp"
-# include "../includes/exceptions.hpp"
-# include "../includes/utils.hpp"
+# include "../incl/ServerSettings.hpp"
+# include "../incl/exceptions.hpp"
+# include "../incl/utils.hpp"
 
 
 class ConfigParser

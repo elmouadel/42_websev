@@ -6,11 +6,11 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 16:59:26 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/27 18:24:01 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/29 17:53:51 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../classes/RequestParser.hpp"
+#include "../class/RequestParser.hpp"
 #include "../../ztrash/debug.h"
 
 /******************************************************************************/
@@ -107,22 +107,11 @@ void RequestParser::ctyp_handle(std::vector<std::string> &fileds, const std::str
     if (fileds[HR_METHOD] == "POST")
     {
         std::transform(word.begin(), word.end(), word.begin(), ::tolower);
-        if (word == "multipart/form-data")
-        {
-            pos = header.find("boundary=", word.length());
-            if (pos == std::string::npos)
-                throw response_status(SC_415);
-            pos += 9;
-            fileds[HR_BONDRY] = std::string("--") + header.substr(pos, header.find_first_of(" \r\n", pos) - pos);
-            if (is_empty(fileds[HR_BONDRY]))
-                throw response_status(SC_415);
-        }
+        if (word != "multipart/form-data")
+            throw response_status(SC_415);
     }
-    fileds[HR_CTYP] = word;
-    // out(">>>>")
-    // out(fileds[HR_CTYP])
-    // out(fileds[HR_BONDRY])
-    // out(">>>>")
+    pos = header.find_first_not_of(" ");
+    fileds[HR_CTYP] = header.substr(pos, header.find_first_of("\r\n") - pos);
 }
 
 /******************************************************************************/

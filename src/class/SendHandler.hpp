@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 12:07:28 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/16 23:10:56 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/29 17:58:34 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,10 @@
 # include <vector>
 # include <iostream>
 # include <sys/socket.h>
-# include "../includes/utils.hpp"
-# include "../includes/MiniStructs.hpp"
-# include "../includes/ServerSettings.hpp"
-# include "../classes/SendHandler.hpp"
+# include "../incl/utils.hpp"
+# include "../incl/MiniStructs.hpp"
+# include "../incl/ServerSettings.hpp"
+# include "../class/SendHandler.hpp"
 
 class SendHandler
 {

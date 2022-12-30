@@ -6,11 +6,11 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/21 21:42:54 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/27 16:05:15 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/29 17:53:51 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../classes/ConfigParser.hpp"
+#include "../class/ConfigParser.hpp"
 
 /******************************************************************************/
 /*                            construct-destruct                              */

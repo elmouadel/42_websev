@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/23 22:25:40 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/24 22:17:38 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/29 17:58:34 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,10 @@
 # include <string>
 # include <fcntl.h>
 # include <unistd.h>
-# include "../includes/ServerSettings.hpp"
-# include "../includes/exceptions.hpp"
-# include "../includes/macros.hpp"
+# include <signal.h>
+# include "../incl/ServerSettings.hpp"
+# include "../incl/exceptions.hpp"
+# include "../incl/macros.hpp"
 
 class CGIExecutor
 {
@@ -32,7 +33,8 @@ class CGIExecutor
         CGIExecutor(std::vector<std::string>&, LocationSet&);
         ~CGIExecutor();
         void set_body(std::string *);
-        void execute_cgi(void);
+        int execute_cgi(void);
+        static bool pass_input_to_cgi(std::string& input, size_t &wlen, int fd);
 };
 
 

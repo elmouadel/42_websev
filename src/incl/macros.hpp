@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/29 21:39:49 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/27 10:59:46 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/28 16:57:49 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,7 @@
 #define HR_CTYP     4
 #define HR_CNTLEN   5
 #define HR_TENCOD   6
-#define HR_BONDRY   7
-#define HR_QUERIES  8
+#define HR_QUERIES  7
 
 #define HS_STCODE   0
 #define HS_CNTLEN   1
@@ -63,6 +62,7 @@
 #define SC_415 "415 Unsupported Media Type"
 #define SC_500 "500 Internal Server Error"
 #define SC_501 "501 Not Implemented"
+#define SC_502 "502 Bad Gateway"
 #define SC_505 "505 HTTP Version Not Supported"
 /******************************************************************************/
 /*                              CGI Variable Name                             */
@@ -83,6 +83,7 @@
 #define ENV_GATEWAY_INTERFACE 13
 #define ENV_REDIRECT_STATUS 13
 #define ENV_PATH_TRANSLATED 14
+#define ENV_UPLOAD_DIR 15
 
 
 

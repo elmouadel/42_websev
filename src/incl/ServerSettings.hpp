@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 21:59:41 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/27 16:00:33 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/28 17:32:12 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,12 +33,6 @@ struct LocationSet
     bool                                _autoindex;
     LocationSet() : _cb_max_size(1000000000), _autoindex(0)
     {
-        _err_page[201] = "./error_pages/ep_SC_201.html";
-        _err_page[301] = "./error_pages/ep_SC_301.html";
-        _err_page[302] = "./error_pages/ep_SC_302.html";
-        _err_page[304] = "./error_pages/ep_SC_304.html";
-        _err_page[307] = "./error_pages/ep_SC_307.html";
-        _err_page[308] = "./error_pages/ep_SC_308.html";
         _err_page[400] = "./error_pages/ep_SC_400.html";
         _err_page[403] = "./error_pages/ep_SC_403.html";
         _err_page[404] = "./error_pages/ep_SC_404.html";
@@ -50,6 +44,7 @@ struct LocationSet
         _err_page[415] = "./error_pages/ep_SC_415.html";
         _err_page[500] = "./error_pages/ep_SC_500.html";
         _err_page[501] = "./error_pages/ep_SC_501.html";
+        _err_page[502] = "./error_pages/ep_SC_502.html";
         _err_page[505] = "./error_pages/ep_SC_505.html";
     }
     ~LocationSet() {}

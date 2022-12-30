@@ -6,11 +6,11 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 11:27:06 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/27 08:21:46 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/29 17:53:51 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../classes/ServerLauncher.hpp"
+#include "../class/ServerLauncher.hpp"
 #include "../../ztrash/debug.h"
 
 /******************************************************************************/
@@ -48,23 +48,15 @@ void ServerLauncher::core_server_loop(void)
                 if (!o_events[i].udata)
                     this->accept(o_events[i].ident, o_events[i].data);
                 else
-                {
-                    try
-                    {
-                        ((RecvHandler*)o_events[i].udata)->operator()(o_events[i].ident, o_events[i].data);
-                    }
-                    catch(const std::exception& e)
-                    {
-                        std::cerr << e.what() << '\n';
-                        _rhandl.erase(o_events[i].ident);
-                        close(o_events[i].ident);
-                    }
-                    if (((RecvHandler*)o_events[i].udata)->get_is_done())
+                {   
+                    int cgi_fd;
+                    recv_event_handler(o_events[i]);
+                    cgi_fd = ((RecvHandler*)o_events[i].udata)->get_cgi_fd();
+                    if (cgi_fd) // only once after cgi execution
                     {
                         toggle_event(o_events[i].ident, EVFILT_READ, EV_DELETE);
-                        _shandl[o_events[i].ident].set_response(&_responses[o_events[i].ident]);
-                        toggle_event(o_events[i].ident, EVFILT_WRITE, EV_ADD | EV_CLEAR, &_shandl[o_events[i].ident]);
-                        _rhandl.erase(o_events[i].ident);
+                        _icgi[cgi_fd] = &_rhandl[o_events[i].ident];
+                        toggle_event(cgi_fd, EVFILT_WRITE, EV_ADD | EV_CLEAR, _icgi[cgi_fd]);
                     }
                 }
             }
@@ -72,7 +64,10 @@ void ServerLauncher::core_server_loop(void)
             {
                 try
                 {
-                    ((SendHandler*)o_events[i].udata)->operator()(o_events[i].ident, o_events[i].data);
+                    if (_icgi.find(o_events[i].ident) != _icgi.end())
+                        recv_event_handler(o_events[i]);
+                    else
+                        ((SendHandler*)o_events[i].udata)->operator()(o_events[i].ident, o_events[i].data);
                 }
                 catch(const std::exception& e)
                 {
@@ -81,13 +76,38 @@ void ServerLauncher::core_server_loop(void)
                 }
                 if (((SendHandler*)o_events[i].udata)->get_is_done())
                 {
-                        toggle_event(o_events[i].ident, EVFILT_WRITE, EV_DELETE);
-                        _shandl.erase(o_events[i].ident);
-                        _responses.erase(o_events[i].ident);
-                        close(o_events[i].ident);
+                    toggle_event(o_events[i].ident, EVFILT_WRITE, EV_DELETE);
+                    _shandl.erase(o_events[i].ident);
+                    _responses.erase(o_events[i].ident);
+                    close(o_events[i].ident);
                 }
             }
         }
+    }
+}
+void ServerLauncher::recv_event_handler(struct kevent &o_event)
+{
+    try
+    {
+        ((RecvHandler*)o_event.udata)->operator()(o_event.ident, o_event.data);
+    }
+    catch(const std::exception& e) // program get here only before cgi launch
+    {
+        std::cerr << e.what() << '\n';
+        toggle_event(o_event.ident, EVFILT_READ, EV_DELETE);
+        _rhandl.erase(o_event.ident);
+        close(o_event.ident);
+        return;
+    }
+    if (((RecvHandler*)o_event.udata)->get_is_done())
+    {
+        int sock_fd = ((RecvHandler*)o_event.udata)->get_sock_fd();
+        toggle_event(o_event.ident, EVFILT_READ, EV_DELETE);
+        _shandl[sock_fd].set_response(&_responses[sock_fd]);
+        toggle_event(sock_fd, EVFILT_WRITE, EV_ADD | EV_CLEAR, &_shandl[sock_fd]);
+        _rhandl.erase(sock_fd);
+        if (!((RecvHandler*)o_event.udata)->get_cgi_fd())
+            _icgi.erase(o_event.ident);
     }
 }
 
@@ -183,6 +203,7 @@ void ServerLauncher::accept(int fd, int ndata)
         EV_SET(&i_events.back(), rc, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, &_rhandl[rc]);
         _rhandl[rc].set_servers(&_pair_fd_servers[fd]);
         _rhandl[rc].set_response(&_responses[rc]);
+        _rhandl[rc].set_sock_fd(rc);
     }
     ::kevent(_kq, i_events.data(), i_events.size(), NULL, 0, 0);
 }

@@ -6,7 +6,7 @@
 #    By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/15 08:46:38 by eabdelha          #+#    #+#              #
-#    Updated: 2022/12/24 16:13:13 by eabdelha         ###   ########.fr        #
+#    Updated: 2022/12/29 17:58:34 by eabdelha         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,8 +21,8 @@ SRC_PATH = ./src/
 DEF_PATH = ./src/defs/
 UTL_PATH = ./src/utils/
 
-CLS_PATH = ./src/classes/
-INC_PATH = ./src/includes/
+CLS_PATH = ./src/class/
+INC_PATH = ./src/incl/
 
 OBJ_PATH = ./obj/
 
@@ -38,7 +38,6 @@ INCLUDES =	$(INC_PATH)ServerSettings.hpp		\
 			$(CLS_PATH)SendHandler.hpp			\
 			$(CLS_PATH)RequestParser.hpp		\
 			$(CLS_PATH)RequestProcessor.hpp		\
-			$(CLS_PATH)UploadHandler.hpp		\
 			$(CLS_PATH)CGIExecutor.hpp			\
 			
 
@@ -50,7 +49,6 @@ SRC	=	main.cpp	\
 		SendHandler.cpp			\
 		RequestParser.cpp		\
 		RequestProcessor.cpp	\
-		UploadHandler.cpp		\
 		CGIExecutor.cpp			\
 		\
 		utility.cpp				\

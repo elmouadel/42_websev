@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 16:58:51 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/16 11:17:53 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/29 17:58:34 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,9 @@
 # include <vector>
 # include <string>
 # include <iostream>
-# include "../includes/macros.hpp"
-# include "../includes/utils.hpp"
-# include "../includes/exceptions.hpp"
+# include "../incl/macros.hpp"
+# include "../incl/utils.hpp"
+# include "../incl/exceptions.hpp"
 
 class RequestParser
 {

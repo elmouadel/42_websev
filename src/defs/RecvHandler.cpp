@@ -6,19 +6,19 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 12:10:10 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/27 18:32:02 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/29 17:53:51 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../classes/RecvHandler.hpp"
+#include "../class/RecvHandler.hpp"
 #include "../../ztrash/debug.h"
 
 /******************************************************************************/
 /*                            construct-destruct                              */
 /******************************************************************************/
 
-RecvHandler::RecvHandler() : _is_done(0), _is_head(1), _rlength(0), 
-    _servers(nullptr), _location(nullptr)
+RecvHandler::RecvHandler() : _is_done(0), _is_head(1), _is_cgi(0), _rlength(0), 
+    _cgi_wlen(0), _icgi_fd(0), _servers(nullptr), _location(nullptr)
 {
     _rhead.resize(BUF_SIZE);
     _r_fields.resize(9);
@@ -32,7 +32,6 @@ RecvHandler::~RecvHandler()
 /******************************************************************************/
 /*                              getters-setters                               */
 /******************************************************************************/
-
 ServerSet *RecvHandler::get_matched_server(std::vector<ServerSet*> *server_list)
 {
 
@@ -96,9 +95,21 @@ void RecvHandler::set_response(Response* _sv)
 {
     _response = _sv;
 }
+void RecvHandler::set_sock_fd(int _sv)
+{
+    _sock_fd = _sv;
+}
+int RecvHandler::get_sock_fd(void)
+{
+    return (_sock_fd);
+}
 bool RecvHandler::get_is_done(void)
 {
     return (_is_done);
+}
+int RecvHandler::get_cgi_fd(void)
+{
+    return (_icgi_fd);
 }
 void RecvHandler::set_is_done(bool _sv)
 {
@@ -182,7 +193,7 @@ void RecvHandler::recv_body(int fd, int ndata)
     
     do
     {
-        if (ndata > 0)
+        if (!_is_cgi && ndata > 0)
         {
             _rlength += rdata = ::recv(fd, (void *)(_rbody.data() + _rlength), _rbody.size() - _rlength, 0);
             if (rdata == -1)
@@ -196,25 +207,26 @@ void RecvHandler::recv_body(int fd, int ndata)
             try
             {
                 // out (_rbody)
-                if (is_cgi(_r_fields, _location->_cgi))
+                if (!_is_cgi && is_cgi(_r_fields, _location->_cgi))
                 {
                     CGIExecutor cgi(_r_fields, *_location);
 
                     cgi.set_body(&_rbody);
-                    cgi.execute_cgi();
+                    _icgi_fd = cgi.execute_cgi();
+                }
+                else if (!_is_cgi)
+                    throw response_status(SC_403);
+                if (!CGIExecutor::pass_input_to_cgi(_rbody, _cgi_wlen, _icgi_fd))
+                {
                     mmap_file(*_response, "/tmp/cgi_tmp_file");
                     _s_fields[HS_LCRLF] = "";
                     _s_fields[HS_STCODE] = SC_201;
                     _s_fields[HS_CNTLEN] = std::to_string(_response->_body_len);
+                    build_header(_response->_head, _s_fields);
+                    _is_done = true;
                 }
-                else
-                {
-                    UploadHandler uploader(&_rbody, &_r_fields);
-                    _r_fields[HR_RURL] = _location->_upload_dir;
-                    uploader.select_post_handler();
-                }
-                build_header(_response->_head, _s_fields);
-                _is_done = true;
+                else if (!_is_cgi)
+                    _is_cgi = true;
             }
             catch (const server_error &e)
             {
@@ -231,6 +243,7 @@ void RecvHandler::recv_body(int fd, int ndata)
                 build_header(_response->_head, _s_fields);
                 _is_done = true;
             }
+            return;
         }
     } while (ndata > 0);
 }

@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/15 22:44:40 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/27 01:36:11 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/29 17:58:34 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,12 +22,12 @@
 # include <fcntl.h>
 # include <sys/mman.h>
 # include <sys/stat.h>
-# include "../classes/CGIExecutor.hpp"
-# include "../includes/utils.hpp"
-# include "../includes/macros.hpp"
-# include "../includes/exceptions.hpp"
-# include "../includes/MiniStructs.hpp"
-# include "../includes/ServerSettings.hpp"
+# include "../class/CGIExecutor.hpp"
+# include "../incl/utils.hpp"
+# include "../incl/macros.hpp"
+# include "../incl/exceptions.hpp"
+# include "../incl/MiniStructs.hpp"
+# include "../incl/ServerSettings.hpp"
 
 class RequestProcessor 
 {

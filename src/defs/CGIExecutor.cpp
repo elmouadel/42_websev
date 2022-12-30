@@ -6,11 +6,11 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/23 22:25:38 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/27 19:58:26 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/29 17:53:51 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../classes/CGIExecutor.hpp"
+#include "../class/CGIExecutor.hpp"
 #include "../../ztrash/debug.h"
 
 /******************************************************************************/
@@ -27,11 +27,10 @@ CGIExecutor::CGIExecutor(std::vector<std::string>& _r_fields, LocationSet& _loca
     _r_fields[HR_RURL].length() - _r_fields[HR_RURL].find_last_of(".") - 1);
     
     _env[ENV_CONTENT_TYPE] = std::string("CONTENT_TYPE=") + _r_fields[HR_CTYP].data();
-    if (!_r_fields[HR_BONDRY].empty())
-        _env[ENV_CONTENT_TYPE] += std::string(";") + "boundary=" + &_r_fields[HR_BONDRY][2];
     _env[ENV_CONTENT_LENGTH] = std::string("CONTENT_LENGTH=") + _r_fields[HR_CNTLEN].data();
     _env[ENV_PATH_INFO] = std::string("PATH_INFO=") + pwd + "/";
     _env[ENV_PATH_TRANSLATED] = std::string("PATH_TRANSLATED=") + pwd + "/";
+    _env[ENV_UPLOAD_DIR] = std::string("UPLOAD_DIR=") + pwd + "/" + _location._upload_dir + "/";
     _env[ENV_QUERY_STRING] = std::string("QUERY_STRING=") + _r_fields[HR_QUERIES].data();
     _env[ENV_REQUEST_METHOD] = std::string("REQUEST_METHOD=") + _r_fields[HR_METHOD].data();
     _env[ENV_SCRIPT_FILENAME] = std::string("SCRIPT_FILENAME=") + _r_fields[HR_RURL];
@@ -62,12 +61,17 @@ void CGIExecutor::set_body(std::string *_sv)
 /******************************************************************************/
 /*                                 execute cgi                                */
 /******************************************************************************/
-void CGIExecutor::execute_cgi(void)
+void sigpipe_handler(int signum) 
+{
+    (void)signum;
+}
+
+int CGIExecutor::execute_cgi(void)
 {
     std::map<int, std::string>::iterator    it;
-    const char*                             env[20];
+    const char*                             env[21];
     const char*                             args[3];
-    int                                     status;
+    int                                     fds[2];
     int                                     pid;
     int                                     i;
     
@@ -80,36 +84,61 @@ void CGIExecutor::execute_cgi(void)
     for (i = 0; it != _args.end(); ++it, ++i)
         args[i] = it->second.data();
     args[i] = nullptr;
-    // out(*_body)
-    int fds[2];
-    pipe(fds);
+
+    if (_body)
+        if (pipe(fds) == -1)
+            throw server_error(std::string("error: pipe: ") + ::strerror(errno));
     pid = fork();
+    if (pid == -1)
+            throw server_error(std::string("error: pipe: ") + ::strerror(errno));
     if (!pid)
     {
-        for (size_t i = 0; i < _env.size(); ++i)
-            out(env[i])
-        for (size_t i = 0; i < _args.size(); ++i)
-            out(args[i])
-        
-        int fd_out = open("/tmp/cgi_tmp_file", O_WRONLY | O_TRUNC | O_CREAT, S_IRWXU);
+        // for (size_t i = 0; i < _env.size(); ++i) out(env[i]) for (size_t i = 0; i < _args.size(); ++i) out(args[i])
+        int fd_out = open("/tmp/cgi_tmp_file", O_WRONLY | O_TRUNC | O_CREAT, 
+                            S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
         dup2(fd_out, 1);
         close(fd_out);
         if (_body)
         {
             dup2(fds[0], 0);
+            close(fds[0]);
+            close(fds[1]);
         }
         execve(args[0], (char**)args, (char**)env);
-        out (strerror(errno))
+        std::cerr << "error: execve: " <<  ::strerror(errno) << '\n';
+        exit(1);
     }
-    if (_body)
-        write(fds[1], (*_body).data(), (*_body).length());
-        close(fds[0]);
-        close(fds[1]);
-    waitpid(pid, &status, 0);
+    close(fds[0]);
+    if (::fcntl(fds[1], F_SETFL,  O_NONBLOCK) < 0)
+        throw server_error(std::string("error: fcntl: ") + ::strerror(errno));
+    return (fds[1]);
+}
+
+
+bool CGIExecutor::pass_input_to_cgi(std::string& input, size_t &wlen, int fd)
+{
+    signal(SIGPIPE, sigpipe_handler);
+    int wdata = 0;
+    int status;
+    if (input.length() != wlen)
+    {
+        wlen += wdata = write(fd, input.data() + wlen, input.length() - wlen);
+        if (wdata == -1)
+            std::cerr << "error: write: " <<  ::strerror(errno) << '\n';
+    }
+    
+    if (input.length() != wlen && wdata > 0)
+        return (1);
+        
+    close(fd);
+    waitpid(-1, &status, 0);
+    if (WIFSIGNALED(status))
+        throw response_status(SC_502);
     if (WIFEXITED(status))
     {
         status = WEXITSTATUS(status);
         if (status != 0)
-            throw response_status(SC_500);
+            throw response_status(SC_502);
     }
+    return (0);
 }

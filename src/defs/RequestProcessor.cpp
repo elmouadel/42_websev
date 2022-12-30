@@ -6,11 +6,11 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/15 22:44:42 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/27 18:08:48 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/29 17:53:51 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../classes/RequestProcessor.hpp"
+#include "../class/RequestProcessor.hpp"
 #include "../../ztrash/debug.h"
 
 /******************************************************************************/
@@ -24,7 +24,7 @@ RequestProcessor::RequestProcessor(Response* _cv1, std::vector<std::string>* _cv
 {
     if (!(*_r_fields)[HR_CNTLEN].empty() && stoul((*_r_fields)[HR_CNTLEN]) > _location->_cb_max_size)
         throw response_status (SC_413);
-    (*_r_fields)[HR_RURL] = _location->_root + "/" \
+    (*_r_fields)[HR_RURL] = _location->_root /*+ "/" */\
     + (*_r_fields)[HR_URL].substr(_location->_url_path.length(), (*_r_fields)[HR_URL].length());
     check_is_allowed_method();
 }
@@ -87,7 +87,7 @@ void RequestProcessor::get_method_handler(void)
             throw response_status(SC_404);
     }
     else
-            throw response_status(SC_404);
+        throw response_status(SC_505);
         
 }
 

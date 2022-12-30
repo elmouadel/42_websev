@@ -6,15 +6,15 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/20 11:14:28 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/17 12:02:47 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/29 17:58:34 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <vector>
 #include <iostream>
-#include "./includes/ServerSettings.hpp"
-#include "./classes/ConfigParser.hpp"
-#include "./classes/ServerLauncher.hpp"
+#include "./incl/ServerSettings.hpp"
+#include "./class/ConfigParser.hpp"
+#include "./class/ServerLauncher.hpp"
 
 int main(int ac, char **av)
 {
