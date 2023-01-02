@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/29 21:39:49 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/28 16:57:49 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/30 22:10:59 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,7 @@
 #define ENV_REDIRECT_STATUS 13
 #define ENV_PATH_TRANSLATED 14
 #define ENV_UPLOAD_DIR 15
+#define ENV_PHP_INI_SCAN_DIR 16
 
 
 

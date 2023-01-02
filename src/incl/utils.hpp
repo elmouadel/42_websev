@@ -37,6 +37,7 @@ bool        is_cgi(std::vector<std::string> r_fields, std::map<std::string, std:
 std::string get_file_extention(const std::string &file);
 std::string get_content_type(const char *file);
 void        mmap_file(Response &response, const char *file);
+size_t      get_pos_string(const char *str, size_t slen, const char *tof);
 std::string get_date(void);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/15 22:44:40 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/29 17:58:34 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/01 10:40:38 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,8 @@ class RequestProcessor
         bool process_request(void);
         void get_method_handler(void);
         void get_response_body(const char*);
-        void get_cgi_response_body(void);
+        void get_response_cgi_body(const char*);
+        void execute_cgi(void);
         void check_is_allowed_method(void);
         void list_directory(void);
 };

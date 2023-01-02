@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/15 22:44:42 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/29 17:53:51 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/02 16:05:11 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ RequestProcessor::RequestProcessor(Response* _cv1, std::vector<std::string>* _cv
 {
     if (!(*_r_fields)[HR_CNTLEN].empty() && stoul((*_r_fields)[HR_CNTLEN]) > _location->_cb_max_size)
         throw response_status (SC_413);
-    (*_r_fields)[HR_RURL] = _location->_root /*+ "/" */\
+    (*_r_fields)[HR_RURL] = _location->_root + "/"\
     + (*_r_fields)[HR_URL].substr(_location->_url_path.length(), (*_r_fields)[HR_URL].length());
     check_is_allowed_method();
 }
@@ -38,6 +38,15 @@ RequestProcessor::~RequestProcessor()
 
 bool RequestProcessor::process_request(void)
 {
+    size_t      pos;
+
+    // out ((*_r_fields)[HR_URL]) // space in url
+    pos = (*_r_fields)[HR_RURL].find_last_of("?");
+    if (pos != std::string::npos)
+    {
+        (*_r_fields)[HR_QUERIES] = (*_r_fields)[HR_RURL].substr(pos + 1, (*_r_fields)[HR_RURL].length() - pos - 1);
+        (*_r_fields)[HR_RURL] = (*_r_fields)[HR_RURL].substr(0, pos);
+    }
     if ((*_r_fields)[HR_METHOD] == "GET")
     {
         get_method_handler();
@@ -57,7 +66,7 @@ void RequestProcessor::get_method_handler(void)
         if (file_info.st_mode & S_IFREG)
         {
             if (::is_cgi(*_r_fields, _location->_cgi))
-                get_cgi_response_body();
+                execute_cgi();
             else
                 get_response_body((*_r_fields)[HR_RURL].data());
             return;
@@ -74,7 +83,7 @@ void RequestProcessor::get_method_handler(void)
                 if (file_info.st_mode & S_IFREG)
                 {
                     if (::is_cgi(*_r_fields, _location->_cgi))
-                        get_cgi_response_body();
+                        execute_cgi();
                     else
                         get_response_body(str.data());
                     return;
@@ -87,25 +96,43 @@ void RequestProcessor::get_method_handler(void)
             throw response_status(SC_404);
     }
     else
-        throw response_status(SC_505);
+        throw response_status(SC_404);
         
 }
-
 void RequestProcessor::get_response_body(const char *file)
 {
     mmap_file(*_response, file);
     (*_s_fields)[HS_STCODE] = SC_200;
+
     (*_s_fields)[HS_CNTLEN] = std::to_string(_response->_body_len);
     (*_s_fields)[HS_CTYP] = get_content_type(file);
 }
 
-void RequestProcessor::get_cgi_response_body(void)
+void RequestProcessor::get_response_cgi_body(const char *file)
+{
+    mmap_file(*_response, file);
+    (*_s_fields)[HS_STCODE] = SC_200;
+
+    size_t pos;
+    pos = get_pos_string(_response->_body, _response->_body_len, "\n\n");
+    if (pos == std::string::npos)
+        pos = get_pos_string(_response->_body, _response->_body_len, "\r\n\r\n");
+    if (pos == std::string::npos)
+        pos = 0;
+    if (pos)
+        (*_s_fields)[HS_LCRLF] = "";
+    size_t clen = _response->_body_len - pos;
+    (*_s_fields)[HS_CNTLEN] = std::to_string(clen);
+    (*_s_fields)[HS_CTYP] = get_content_type(file);
+}
+
+void RequestProcessor::execute_cgi(void)
 {
     CGIExecutor cgi((*_r_fields), *_location);
 
     cgi.execute_cgi();
-    get_response_body("/tmp/cgi_tmp_file");
-    (*_s_fields)[HS_LCRLF] = "";
+    CGIExecutor::wait_for_cgi();
+    get_response_cgi_body("/tmp/cgi_tmp_file");
 }
 /******************************************************************************/
 /*                                tests checks                                */

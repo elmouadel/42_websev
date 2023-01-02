@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/15 21:42:10 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/29 17:58:34 by eabdelha         ###   ########.fr       */
+/*   Updated: 2022/12/30 11:49:14 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,6 +206,22 @@ void build_body(Response &response, std::vector<std::string> &s_fields, std::map
     mmap_file(response, file.data());
     s_fields[HS_CNTLEN] = std::to_string(response._body_len);
     s_fields[HS_CTYP] = get_content_type(file.data());
+}
+
+size_t get_pos_string(const char *str, size_t slen, const char *tof)
+{
+    for (size_t i = 0; i < slen; ++i)
+    {
+        size_t j = 0;
+        size_t p = i;
+        while (str[i++] == tof[j++])
+        {
+            if (!tof[j])
+                return (p + j);
+        }
+        i = p;
+    }
+    return (std::string::npos);
 }
 
 void mmap_file(Response &response, const char *file)

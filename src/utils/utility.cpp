@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/22 15:36:25 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/29 17:58:34 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/01 10:34:58 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,15 +138,8 @@ std::string get_file_extention(const std::string &file)
 
 bool is_cgi(std::vector<std::string> r_fields, std::map<std::string, std::string> cgi)
 {
-    size_t      pos;
     std::string ext;
     
-    pos = r_fields[HR_RURL].find_last_of("?");
-    if (pos != std::string::npos)
-    {
-        r_fields[HR_QUERIES] = r_fields[HR_RURL].substr(pos + 1, r_fields[HR_RURL].length() - pos - 1);
-        r_fields[HR_RURL] = r_fields[HR_RURL].substr(0, pos);
-    }
     ext = get_file_extention(r_fields[HR_RURL]);
     if (!ext.empty())
     {

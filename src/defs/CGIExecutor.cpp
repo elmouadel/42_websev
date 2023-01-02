@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/23 22:25:38 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/29 17:53:51 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/02 16:11:02 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,13 +35,15 @@ CGIExecutor::CGIExecutor(std::vector<std::string>& _r_fields, LocationSet& _loca
     _env[ENV_REQUEST_METHOD] = std::string("REQUEST_METHOD=") + _r_fields[HR_METHOD].data();
     _env[ENV_SCRIPT_FILENAME] = std::string("SCRIPT_FILENAME=") + _r_fields[HR_RURL];
     _env[ENV_SCRIPT_NAME] = std::string("SCRIPT_NAME=") + _r_fields[HR_RURL];
-    // _env[ENV_SERVER_NAME] = std::string("SERVER_NAME=") + "127.0.0.1";
+    _env[ENV_SERVER_NAME] = std::string("SERVER_NAME=") + "127.0.0.1";
     // _env[ENV_SERVER_PORT] = std::string("SERVER_PORT=") + "8000";
     _env[ENV_SERVER_SOFTWARE] = std::string("SERVER_SOFTWARE=") + "nginy/1.33.7";
     _env[ENV_SERVER_PROTOCOL] = std::string("SERVER_PROTOCOL=") + "HTTP/1.1";
     _env[ENV_GATEWAY_INTERFACE] = std::string("GATEWAY_INTERFACE=") + "CGI/1.1";
     _env[ENV_REDIRECT_STATUS] = std::string("REDIRECT_STATUS=") + "0";
-
+    if (ext == "php")
+        _env[ENV_PHP_INI_SCAN_DIR] = std::string("PHP_INI_SCAN_DIR=") + pwd + "/config/";
+    
     if (_location._cgi[ext][0] != '/')
         _args[0] = std::string(pwd) + "/" + _location._cgi[ext]; 
     else
@@ -108,10 +110,14 @@ int CGIExecutor::execute_cgi(void)
         std::cerr << "error: execve: " <<  ::strerror(errno) << '\n';
         exit(1);
     }
-    close(fds[0]);
-    if (::fcntl(fds[1], F_SETFL,  O_NONBLOCK) < 0)
-        throw server_error(std::string("error: fcntl: ") + ::strerror(errno));
-    return (fds[1]);
+    if (_body)
+    {
+        close(fds[0]);
+        if (::fcntl(fds[1], F_SETFL,  O_NONBLOCK) < 0)
+            throw server_error(std::string("error: fcntl: ") + ::strerror(errno));
+        return (fds[1]);
+    }
+    return (-1);
 }
 
 
@@ -119,7 +125,6 @@ bool CGIExecutor::pass_input_to_cgi(std::string& input, size_t &wlen, int fd)
 {
     signal(SIGPIPE, sigpipe_handler);
     int wdata = 0;
-    int status;
     if (input.length() != wlen)
     {
         wlen += wdata = write(fd, input.data() + wlen, input.length() - wlen);
@@ -131,6 +136,14 @@ bool CGIExecutor::pass_input_to_cgi(std::string& input, size_t &wlen, int fd)
         return (1);
         
     close(fd);
+    wait_for_cgi();
+    return (0);
+}
+
+void CGIExecutor::wait_for_cgi(void)
+{
+    int status;
+    
     waitpid(-1, &status, 0);
     if (WIFSIGNALED(status))
         throw response_status(SC_502);
@@ -140,5 +153,4 @@ bool CGIExecutor::pass_input_to_cgi(std::string& input, size_t &wlen, int fd)
         if (status != 0)
             throw response_status(SC_502);
     }
-    return (0);
 }

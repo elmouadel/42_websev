@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 12:10:10 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/29 17:53:51 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/02 11:17:25 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,6 @@ LocationSet *RecvHandler::get_matched_location(std::vector<ServerSet*> *server_l
                     _r_fields[HR_URL].insert(0, server->_locations[i]._redirect.first);
                     
                     _s_fields[HS_LOCATN] = _r_fields[HR_URL];
-                    // out (_s_fields[HS_LOCATN] + "<<")
                     if (server->_locations[i]._redirect.second == 301)
                         throw response_status(SC_301);
                     else
@@ -206,9 +205,9 @@ void RecvHandler::recv_body(int fd, int ndata)
         {
             try
             {
-                // out (_rbody)
                 if (!_is_cgi && is_cgi(_r_fields, _location->_cgi))
                 {
+                    // out (_rbody)
                     CGIExecutor cgi(_r_fields, *_location);
 
                     cgi.set_body(&_rbody);
@@ -219,9 +218,19 @@ void RecvHandler::recv_body(int fd, int ndata)
                 if (!CGIExecutor::pass_input_to_cgi(_rbody, _cgi_wlen, _icgi_fd))
                 {
                     mmap_file(*_response, "/tmp/cgi_tmp_file");
-                    _s_fields[HS_LCRLF] = "";
                     _s_fields[HS_STCODE] = SC_201;
-                    _s_fields[HS_CNTLEN] = std::to_string(_response->_body_len);
+            
+                    size_t pos;
+                    pos = get_pos_string(_response->_body, _response->_body_len, "\n\n");
+                    if (pos == std::string::npos)
+                        pos = get_pos_string(_response->_body, _response->_body_len, "\r\n\r\n");
+                    if (pos == std::string::npos)
+                        pos = 0;
+                    if (pos)
+                        _s_fields[HS_LCRLF] = "";
+                        
+                    size_t clen = _response->_body_len - pos;
+                    _s_fields[HS_CNTLEN] = std::to_string(clen);
                     build_header(_response->_head, _s_fields);
                     _is_done = true;
                 }

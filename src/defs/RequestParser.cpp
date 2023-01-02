@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 16:59:26 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/29 17:53:51 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/02 18:08:25 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,12 +104,12 @@ void RequestParser::ctyp_handle(std::vector<std::string> &fileds, const std::str
     get_first_word(header, word);
     if (is_empty(word))
         throw response_status(SC_400);
-    if (fileds[HR_METHOD] == "POST")
-    {
-        std::transform(word.begin(), word.end(), word.begin(), ::tolower);
-        if (word != "multipart/form-data")
-            throw response_status(SC_415);
-    }
+    // if (fileds[HR_METHOD] == "POST")
+    // {
+    //     std::transform(word.begin(), word.end(), word.begin(), ::tolower);
+    //     if (word != "multipart/form-data")
+    //         throw response_status(SC_415);
+    // }
     pos = header.find_first_not_of(" ");
     fileds[HR_CTYP] = header.substr(pos, header.find_first_of("\r\n") - pos);
 }
@@ -131,6 +131,15 @@ void RequestParser::parse_first_line(void)
         throw response_status(SC_505);
     (*_r_fields)[HR_METHOD] = str_sq[0];
     (*_r_fields)[HR_URL] = str_sq[1];
+    
+    size_t pos = (*_r_fields)[HR_URL].find("%20");
+
+    while (pos != std::string::npos)
+    {
+       (*_r_fields)[HR_URL].erase(pos, 3);
+       (*_r_fields)[HR_URL].insert(pos, 1, ' ');
+       pos = (*_r_fields)[HR_URL].find("%20", pos - 2);
+    }
 }
 
 void RequestParser::parse_header(void)
@@ -139,8 +148,8 @@ void RequestParser::parse_header(void)
     {
         size_t p1 = _header->find_first_not_of(" ", i);
         size_t p2 = _header->find_first_of(":\r\n", p1);
+        
         i = p2;
-        // out(&(*_header)[i])
         if ((*_header)[p2] == ':')
         {
             std::map<std::string, handler>::iterator it;
