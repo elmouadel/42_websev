@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 11:27:06 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/29 17:53:51 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/06 12:01:15 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,16 @@ void ServerLauncher::core_server_loop(void)
             if (o_events[i].filter == EVFILT_READ)
             {
                 if (!o_events[i].udata)
-                    this->accept(o_events[i].ident, o_events[i].data);
+                {
+                    try
+                    {
+                        this->accept(o_events[i].ident, o_events[i].data);
+                    }
+                    catch (std::exception &e)
+                    {
+                        std::cerr << e.what() << '\n';
+                    }
+                }
                 else
                 {   
                     int cgi_fd;
@@ -72,14 +81,25 @@ void ServerLauncher::core_server_loop(void)
                 catch(const std::exception& e)
                 {
                     std::cerr << e.what() << '\n';
-                    ((SendHandler*)o_events[i].udata)->set_is_done(true);
+                    toggle_event(o_events[i].ident, EVFILT_WRITE, EV_DELETE);
+                    _shandl.erase(o_events[i].ident);
+                    _responses.erase(o_events[i].ident);
+                    close(o_events[i].ident);
                 }
                 if (((SendHandler*)o_events[i].udata)->get_is_done())
                 {
                     toggle_event(o_events[i].ident, EVFILT_WRITE, EV_DELETE);
                     _shandl.erase(o_events[i].ident);
                     _responses.erase(o_events[i].ident);
-                    close(o_events[i].ident);
+                    if (_rhandl[o_events[i].ident].get_is_close())
+                    {
+                        close(o_events[i].ident);
+                    }
+                    else
+                    {
+                        toggle_event(o_events[i].ident, EVFILT_READ, EV_ADD | EV_CLEAR, &_rhandl[o_events[i].ident]);
+                        _rhandl[o_events[i].ident].set_response(&_responses[o_events[i].ident]);
+                    }
                 }
             }
         }
@@ -96,16 +116,20 @@ void ServerLauncher::recv_event_handler(struct kevent &o_event)
         std::cerr << e.what() << '\n';
         toggle_event(o_event.ident, EVFILT_READ, EV_DELETE);
         _rhandl.erase(o_event.ident);
+        out("close1")
         close(o_event.ident);
         return;
     }
     if (((RecvHandler*)o_event.udata)->get_is_done())
     {
         int sock_fd = ((RecvHandler*)o_event.udata)->get_sock_fd();
-        toggle_event(o_event.ident, EVFILT_READ, EV_DELETE);
         _shandl[sock_fd].set_response(&_responses[sock_fd]);
         toggle_event(sock_fd, EVFILT_WRITE, EV_ADD | EV_CLEAR, &_shandl[sock_fd]);
-        _rhandl.erase(sock_fd);
+        toggle_event(o_event.ident, EVFILT_READ, EV_DELETE);
+        if (((RecvHandler*)o_event.udata)->get_is_close())
+            _rhandl.erase(sock_fd);
+        else
+            ((RecvHandler*)o_event.udata)->init_variables();
         if (!((RecvHandler*)o_event.udata)->get_cgi_fd())
             _icgi.erase(o_event.ident);
     }

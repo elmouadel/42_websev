@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/29 21:39:49 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/30 22:10:59 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/06 11:05:18 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@
 #define HR_CNTLEN   5
 #define HR_TENCOD   6
 #define HR_QUERIES  7
+#define HR_CONNECT  8
 
 #define HS_STCODE   0
 #define HS_CNTLEN   1
@@ -39,7 +40,8 @@
 #define HS_ALLOWD   3
 #define HS_CTYP     4
 #define HS_LCRLF    5
-// #define HS_LMODIF   5
+#define HS_CONNECT    6
+// #define HS_LMODIF    7
 
 /******************************************************************************/
 /*                         HTTP response status codes                         */

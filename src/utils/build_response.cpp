@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/15 21:42:10 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/30 11:49:14 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/06 10:46:09 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,6 +194,12 @@ void build_header(std::string &header, std::vector<std::string> &s_fields)
     {
         header.append("Allow: ");
         header.append(s_fields[HS_ALLOWD]);
+        header.append("\r\n");
+    }
+    if (!s_fields[HS_CONNECT].empty())
+    {
+        header.append("Connection: ");
+        header.append(s_fields[HS_CONNECT]);
         header.append("\r\n");
     }
     header.append(s_fields[HS_LCRLF]);

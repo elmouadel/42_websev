@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 12:10:10 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/02 11:17:25 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/06 12:02:07 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,18 +17,43 @@
 /*                            construct-destruct                              */
 /******************************************************************************/
 
-RecvHandler::RecvHandler() : _is_done(0), _is_head(1), _is_cgi(0), _rlength(0), 
-    _cgi_wlen(0), _icgi_fd(0), _servers(nullptr), _location(nullptr)
+RecvHandler::RecvHandler() : _is_done(0), _is_head(1), _is_cgi(0), _is_chunk(0), _do_one(0), _is_exec(0), _is_close(1),
+_rlength(0), _cgi_wlen(0), _icgi_fd(0), _servers(nullptr), _location(nullptr), _unchunker(nullptr)
 {
     _rhead.resize(BUF_SIZE);
     _r_fields.resize(9);
-    _s_fields.resize(6);
+    _s_fields.resize(7);
     _s_fields[HS_LCRLF] = "\r\n";
 }
 RecvHandler::~RecvHandler()
 {
+    delete _unchunker;
 }
 
+void RecvHandler::init_variables(void)
+{
+    _is_done = 0;
+    _is_head = 1;
+    _is_cgi = 0;
+    _is_chunk = 0;
+    _do_one = 0;
+    _is_exec = 0;
+    _rlength = 0;
+    _cgi_wlen = 0;
+    _icgi_fd = 0;
+    _rhead.clear();
+    _rhead.resize(BUF_SIZE);
+    _rbody.clear();
+    _chunk_h.clear();
+    _r_fields.clear();
+    _r_fields.resize(9);
+    _s_fields.clear();
+    _s_fields.resize(7);
+    _location = nullptr;
+    delete _unchunker;
+    _unchunker = nullptr;
+    _s_fields[HS_LCRLF] = "\r\n";
+}
 /******************************************************************************/
 /*                              getters-setters                               */
 /******************************************************************************/
@@ -110,6 +135,10 @@ int RecvHandler::get_cgi_fd(void)
 {
     return (_icgi_fd);
 }
+bool RecvHandler::get_is_close(void)
+{
+    return (_is_close);
+}
 void RecvHandler::set_is_done(bool _sv)
 {
     _is_done = _sv;
@@ -123,12 +152,19 @@ void RecvHandler::operator()(int fd, int ndata)
 {
     if (_is_head)
         recv_head(fd, ndata);
-    if (!_is_head)
-        recv_body(fd, ndata);
+    if (!_is_head && !_is_exec)
+    {
+        if (_is_chunk)
+            recv_chunked_body(fd, ndata);
+        else if (!_is_chunk)
+            recv_body(fd, ndata);
+    }
+    if (_is_exec)
+        build_post_response();
 }
 
 /******************************************************************************/
-/*                               recv request                                 */
+/*                                  recv head                                 */
 /******************************************************************************/
 
 void RecvHandler::recv_head(int fd, int &ndata)
@@ -158,6 +194,7 @@ void RecvHandler::recv_head(int fd, int &ndata)
             request_parser.parse_first_line();
             _location = get_matched_location(_servers);
             request_parser.parse_header();
+            _is_close = _r_fields[HR_CONNECT] == "close";
             
             RequestProcessor request_processor(_response, &_r_fields, &_s_fields, _location);
             _is_head = _is_done = request_processor.process_request();
@@ -182,10 +219,21 @@ void RecvHandler::recv_head(int fd, int &ndata)
             build_header(_response->_head, _s_fields);
             _is_done = true;
         }
-        if (!_is_head && !_r_fields[HR_CNTLEN].empty())
-            _rbody.resize(stoul(_r_fields[HR_CNTLEN]));
+        if (!_is_head)
+        {
+            if (!_r_fields[HR_CNTLEN].empty())
+                _rbody.resize(stoul(_r_fields[HR_CNTLEN]));
+            else if (_r_fields[HR_TENCOD] == "chunked")
+            {
+                _unchunker = new BodyUnchunker(&_rbody);
+                _is_chunk = true;
+            }
+        }
     }
 }
+/******************************************************************************/
+/*                                  recv body                                 */
+/******************************************************************************/
 void RecvHandler::recv_body(int fd, int ndata)
 {
     int     rdata = 0;
@@ -203,56 +251,116 @@ void RecvHandler::recv_body(int fd, int ndata)
         }
         if (_rlength == _rbody.length())
         {
-            try
-            {
-                if (!_is_cgi && is_cgi(_r_fields, _location->_cgi))
-                {
-                    // out (_rbody)
-                    CGIExecutor cgi(_r_fields, *_location);
-
-                    cgi.set_body(&_rbody);
-                    _icgi_fd = cgi.execute_cgi();
-                }
-                else if (!_is_cgi)
-                    throw response_status(SC_403);
-                if (!CGIExecutor::pass_input_to_cgi(_rbody, _cgi_wlen, _icgi_fd))
-                {
-                    mmap_file(*_response, "/tmp/cgi_tmp_file");
-                    _s_fields[HS_STCODE] = SC_201;
-            
-                    size_t pos;
-                    pos = get_pos_string(_response->_body, _response->_body_len, "\n\n");
-                    if (pos == std::string::npos)
-                        pos = get_pos_string(_response->_body, _response->_body_len, "\r\n\r\n");
-                    if (pos == std::string::npos)
-                        pos = 0;
-                    if (pos)
-                        _s_fields[HS_LCRLF] = "";
-                        
-                    size_t clen = _response->_body_len - pos;
-                    _s_fields[HS_CNTLEN] = std::to_string(clen);
-                    build_header(_response->_head, _s_fields);
-                    _is_done = true;
-                }
-                else if (!_is_cgi)
-                    _is_cgi = true;
-            }
-            catch (const server_error &e)
-            {
-                std::cerr << e.what() << '\n';
-                _s_fields[HS_STCODE] = SC_500;
-                build_body(*_response, _s_fields, _location->_err_page);
-                build_header(_response->_head, _s_fields);
-                _is_done = true;
-            }
-            catch (const response_status &e)
-            {
-                _s_fields[HS_STCODE] = e.what();
-                build_body(*_response, _s_fields, _location->_err_page);
-                build_header(_response->_head, _s_fields);
-                _is_done = true;
-            }
+            _is_exec = true;
             return;
         }
     } while (ndata > 0);
 }
+
+/******************************************************************************/
+/*                            recv chunked body                               */
+/******************************************************************************/
+
+void RecvHandler::recv_chunked_body(int fd, int ndata)
+{
+    int     rdata = 0;
+    std::string chunk;
+    
+    if (!_do_one)
+    {
+        chunk = _rbody;
+        _rbody.clear();
+        _do_one = true;
+    }
+    if (!_chunk_h.empty())
+    {
+        chunk = _chunk_h;
+        _chunk_h.clear();
+    }
+    
+    if (ndata > 0)
+    {
+        _rlength = chunk.length();
+        chunk.resize(ndata + chunk.length());
+        do
+        {
+            _rlength += rdata = ::recv(fd, (void *)(chunk.data() + _rlength), ndata, 0);
+            if (rdata == -1)
+                throw server_error(std::string("error: recv: ") + ::strerror(errno));
+            if (rdata == 0)
+                throw server_error(std::string("Connection closed by client."));
+            ndata -= rdata;
+        } while (ndata > 0);
+    }
+    int  rc = _unchunker->parse_chunked_body(chunk);
+    if (rc == -1)
+    {
+        _r_fields[HR_CNTLEN] = std::to_string(_rbody.length());
+        _is_exec = true;
+        return;
+    }
+    else if (rc >= 0)
+        _chunk_h = chunk.substr(rc, chunk.length() - rc);
+}
+
+/******************************************************************************/
+/*                             build POST response                            */
+/******************************************************************************/
+void RecvHandler::build_post_response(void)
+{
+    // out(_rhead)
+    // out("_________________________________________________________________");
+    // out(_rbody);
+    try
+    {
+        if (!_is_cgi)
+        {
+            if (is_cgi(_r_fields, _location->_cgi))
+            {
+                CGIExecutor cgi(_r_fields, *_location);
+
+                cgi.set_body(&_rbody);
+                _icgi_fd = cgi.execute_cgi();
+            }
+            else
+                throw response_status(SC_403);
+        }
+        if (!CGIExecutor::pass_input_to_cgi(_rbody, _cgi_wlen, _icgi_fd))
+        {
+            mmap_file(*_response, "/tmp/cgi_tmp_file");
+            _s_fields[HS_STCODE] = SC_201;
+    
+            size_t pos;
+            pos = get_pos_string(_response->_body, _response->_body_len, "\n\n");
+            if (pos == std::string::npos)
+                pos = get_pos_string(_response->_body, _response->_body_len, "\r\n\r\n");
+            if (pos == std::string::npos)
+                pos = 0;
+            if (pos)
+                _s_fields[HS_LCRLF] = "";
+                
+            size_t clen = _response->_body_len - pos;
+            _s_fields[HS_CNTLEN] = std::to_string(clen);
+            build_header(_response->_head, _s_fields);
+            _is_done = true;
+        }
+        else if (!_is_cgi)
+            _is_cgi = true;
+    }
+    catch (const server_error &e)
+    {
+        std::cerr << e.what() << '\n';
+        _s_fields[HS_STCODE] = SC_500;
+        build_body(*_response, _s_fields, _location->_err_page);
+        build_header(_response->_head, _s_fields);
+        _is_done = true;
+    }
+    catch (const response_status &e)
+    {
+        _s_fields[HS_STCODE] = e.what();
+        build_body(*_response, _s_fields, _location->_err_page);
+        build_header(_response->_head, _s_fields);
+        _is_done = true;
+    }
+}
+

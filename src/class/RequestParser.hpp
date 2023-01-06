@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 16:58:51 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/29 17:58:34 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/06 08:57:12 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ class RequestParser
         static void ctyp_handle(std::vector<std::string> &, const std::string &);
         static void clen_handle(std::vector<std::string> &, const std::string &);
         static void tencod_handle(std::vector<std::string> &, const std::string &);
+        static void connect_handle(std::vector<std::string> &, const std::string &);
         
 };
 

@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/15 22:44:42 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/02 16:05:11 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/06 10:45:13 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@ RequestProcessor::RequestProcessor(Response* _cv1, std::vector<std::string>* _cv
     (*_r_fields)[HR_RURL] = _location->_root + "/"\
     + (*_r_fields)[HR_URL].substr(_location->_url_path.length(), (*_r_fields)[HR_URL].length());
     check_is_allowed_method();
+    if ((*_r_fields)[HR_CONNECT] != "close")
+        (*_s_fields)[HS_CONNECT] = "keep-alive";
 }
 RequestProcessor::~RequestProcessor()
 {

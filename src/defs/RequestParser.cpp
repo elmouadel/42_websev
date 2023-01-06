@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 16:59:26 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/02 18:08:25 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/06 11:07:05 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ bool init_assign_handl(std::map<std::string, handler> &vmap)
     vmap["content-type"] = RequestParser::ctyp_handle;
     vmap["content-length"] = RequestParser::clen_handle;
     vmap["transfer-encoding"] = RequestParser::tencod_handle;
+    vmap["connection"] = RequestParser::connect_handle;
     return (1);
 }
 bool init_methods_listl(std::set<std::string> &vset)
@@ -114,6 +115,14 @@ void RequestParser::ctyp_handle(std::vector<std::string> &fileds, const std::str
     fileds[HR_CTYP] = header.substr(pos, header.find_first_of("\r\n") - pos);
 }
 
+void RequestParser::connect_handle(std::vector<std::string> &fileds, const std::string &header)
+{
+    std::string word;
+    
+    get_first_word(header, word);
+    std::transform(word.begin(), word.end(), word.begin(), ::tolower);
+    fileds[HR_CONNECT] = word;
+}
 /******************************************************************************/
 /*                           header parsing functions                         */
 /******************************************************************************/
@@ -162,4 +171,7 @@ void RequestParser::parse_header(void)
             i = _header->find_first_of("\n", p2);
         }
     }
+    if ((*_r_fields)[HR_METHOD] == "POST")
+        if ((*_r_fields)[HR_CNTLEN].empty() && (*_r_fields)[HR_TENCOD].empty())
+            throw response_status(SC_400);
 }

@@ -6,7 +6,7 @@
 #    By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/15 08:46:38 by eabdelha          #+#    #+#              #
-#    Updated: 2022/12/29 17:58:34 by eabdelha         ###   ########.fr        #
+#    Updated: 2023/01/04 12:26:55 by eabdelha         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,6 +39,7 @@ INCLUDES =	$(INC_PATH)ServerSettings.hpp		\
 			$(CLS_PATH)RequestParser.hpp		\
 			$(CLS_PATH)RequestProcessor.hpp		\
 			$(CLS_PATH)CGIExecutor.hpp			\
+			$(CLS_PATH)BodyUnchunker.hpp			\
 			
 
 SRC	=	main.cpp	\
@@ -50,6 +51,7 @@ SRC	=	main.cpp	\
 		RequestParser.cpp		\
 		RequestProcessor.cpp	\
 		CGIExecutor.cpp			\
+		BodyUnchunker.cpp			\
 		\
 		utility.cpp				\
 		build_response.cpp

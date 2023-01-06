@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/24 17:34:06 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/24 16:44:41 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/04 12:08:43 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,5 +119,15 @@ public:
     {
     }
 };
+
+class return_unvalid : public std::exception
+{
+public:
+    const char *what() const throw()
+    {
+        return ("");
+    }
+};
+
 
 #endif

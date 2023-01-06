@@ -90,3 +90,54 @@ int main(void) {
     perror("listen");
     return 3;
   }
+
+
+// size_t  chunk_len;
+    
+// chunk_len = 0;
+// if (_rlength)
+// {
+//     chunk_len = _rlength;
+    
+//     if (chunk.length() < chunk_len)
+//         _rlength = chunk_len - chunk.length();
+//     else
+//         _rlength = 0;
+//     _rbody.append(chunk.begin(), chunk.begin() + chunk_len);
+// }
+// out(chunk_len)
+
+// size_t begin_h = chunk_len;
+// while (!_rlength)
+// {
+//     size_t      pos_h;
+//     std::string chunk_len_str;
+
+//     pos_h = chunk_len = chunk.find_first_of("\n", begin_h);
+//     if (chunk_len == std::string::npos)
+//         return;
+//     if (chunk[chunk_len - 1] == '\r')
+//         --chunk_len;
+        
+//     chunk_len_str = chunk.substr(begin_h, chunk_len - begin_h);
+//     chunk_len = std::stoi(chunk_len_str, 0, 16);
+//     if (!chunk_len)
+//     {
+//         build_post_response();
+//         break;
+//     }
+    
+//     if (chunk.length() < chunk_len + pos_h)
+//     {
+//         _rlength = chunk_len + pos_h - chunk.length();
+//         chunk_len = chunk.length() - pos_h;
+//     }
+//     else
+//     {
+//         size_t pos = chunk.find_first_of("\n", chunk_len);
+//         if (pos != std::string::npos)
+//             begin_h += pos - chunk_len;
+//     }
+//     _rbody.append(chunk.begin() + pos_h + 1, chunk.begin() + chunk_len + pos_h);
+//     begin_h += chunk_len;
+    
