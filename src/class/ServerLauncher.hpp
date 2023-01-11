@@ -6,11 +6,10 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 11:27:26 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/29 17:58:34 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/11 13:34:47 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-/* ************************************************************************** */
 #ifndef SERVER_LAUNCHER_HPP
 #define SERVER_LAUNCHER_HPP
 
@@ -28,13 +27,12 @@
 # include "../incl/macros.hpp"
 # include "../incl/utils.hpp"
 # include "../incl/exceptions.hpp"
-# include "../incl/MiniStructs.hpp"
-# include "../incl/ServerSettings.hpp"
+# include "../incl/mini_structs.hpp"
 # include "../class/RecvHandler.hpp"
 # include "../class/SendHandler.hpp"
 
-#define RECV_HANDLER(i)  ((RecvHandler*)o_events[i].udata)->operator()
-#define SEND_HANDLER(i)  ((SendHandler*)o_events[i].udata)->operator()
+#define RECV_CAST(handler) ((RecvHandler*)handler)
+#define SEND_CAST(handler) ((SendHandler*)handler)
 
 class ServerLauncher
 {
@@ -47,7 +45,6 @@ class ServerLauncher
     std::map<int, SendHandler>              _shandl;
     std::map<int, std::vector<ServerSet*> > _pair_fd_servers;
     
-
     public:
         ServerLauncher(std::vector<ServerSet>*);    
         ~ServerLauncher();
@@ -55,16 +52,16 @@ class ServerLauncher
         void    core_server_loop(void);
         void    launch_routines(void);
         void    socket(void);
-        void    setsockopt(void);
         void    fcntl(void);
-        void    bind(ServerSet&);
         void    listen(void);
-        int     kevent(std::vector<struct kevent>&);
-        void    accept(int fd, int ndata);
+        void    accept(int fd);
+        void    setsockopt(void);
+        void    bind(ServerSet&);
+        void    initiate_timeout(int fd);
         void    enable_socket_monitoring(void);
+        int     kevent(std::vector<struct kevent>&);
+        bool    recv_event_handler(int fd, int ndata, RecvHandler* handler); 
         void    toggle_event(size_t fd, int16_t filter, uint16_t flags, void *udata = nullptr);
-        void    recv_event_handler(struct kevent &o_event);
-        
 };
 
 #endif

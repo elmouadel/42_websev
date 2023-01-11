@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/29 21:39:49 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/06 11:05:18 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/11 10:45:20 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,9 @@
 /******************************************************************************/
 /*                               general macros                               */
 /******************************************************************************/
-#define BUF_SIZE 10
-#define LISN_BACKLOG 1014
-#define NB_OEVENTS 24
+#define BUF_SIZE 1024
+#define LISN_BACKLOG 128
+#define NB_OEVENTS  256
 #define URL_LIMIT 1024
 
 /******************************************************************************/
@@ -33,6 +33,9 @@
 #define HR_TENCOD   6
 #define HR_QUERIES  7
 #define HR_CONNECT  8
+#define HR_IFMODIF  9
+#define HR_ETAG     10
+#define HR_COOKIE   11
 
 #define HS_STCODE   0
 #define HS_CNTLEN   1
@@ -40,14 +43,17 @@
 #define HS_ALLOWD   3
 #define HS_CTYP     4
 #define HS_LCRLF    5
-#define HS_CONNECT    6
-// #define HS_LMODIF    7
+#define HS_CONNECT  6
+#define HS_LTMODIF  7
+#define HS_AUTONDX  8
+#define HS_ETAG     9
 
 /******************************************************************************/
 /*                         HTTP response status codes                         */
 /******************************************************************************/
 #define SC_200 "200 ok"
 #define SC_201 "201 Created"
+#define SC_204 "204 No Content"
 #define SC_301 "301 Moved Permanently"
 #define SC_302 "302 Found"
 #define SC_304 "304 Not Modified"
@@ -87,6 +93,7 @@
 #define ENV_PATH_TRANSLATED 14
 #define ENV_UPLOAD_DIR 15
 #define ENV_PHP_INI_SCAN_DIR 16
+#define ENV_HTTP_COOKIE 17
 
 
 

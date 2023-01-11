@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/15 22:44:40 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/01 10:40:38 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/11 13:34:47 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,15 +22,17 @@
 # include <fcntl.h>
 # include <sys/mman.h>
 # include <sys/stat.h>
-# include "../class/CGIExecutor.hpp"
+# include <unordered_map>
 # include "../incl/utils.hpp"
 # include "../incl/macros.hpp"
 # include "../incl/exceptions.hpp"
-# include "../incl/MiniStructs.hpp"
-# include "../incl/ServerSettings.hpp"
+# include "../incl/mini_structs.hpp"
+# include "../class/CGIExecutor.hpp"
 
 class RequestProcessor 
 {
+    static std::unordered_map<std::string, std::string> etags;
+    
     Response*                   _response;
     std::vector<std::string>*   _r_fields;
     std::vector<std::string>*   _s_fields;
@@ -41,11 +43,13 @@ class RequestProcessor
         ~RequestProcessor();
         bool process_request(void);
         void get_method_handler(void);
+        void delete_method_handler(void);
         void get_response_body(const char*);
         void get_response_cgi_body(const char*);
         void execute_cgi(void);
         void check_is_allowed_method(void);
         void list_directory(void);
+        bool is_etaged_resource(const char*);
 };
 
 #endif

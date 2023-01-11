@@ -6,11 +6,12 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/21 21:42:54 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/29 17:53:51 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/06 12:29:17 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../class/ConfigParser.hpp"
+#include "../../ztrash/debug.h"
 
 /******************************************************************************/
 /*                            construct-destruct                              */
@@ -155,14 +156,33 @@ void ConfigParser::upload_dir_handle(LocationSet& location_set, std::string &lin
 }
 void ConfigParser::cb_max_size_handle(LocationSet& location_set, std::string &line)
 {
-    std::vector<std::string> sq_str;
+    std::vector<std::string>    sq_str;
+    size_t                      value;
+    char                        c;
 
     get_sequence_str(line, sq_str);
     if (sq_str.size() != 1)
         throw err_token_args();
+    value = 1;
+    c = tolower(sq_str[0].back());
+    if (strchr("kmg", c) != NULL)
+    {
+        sq_str[0].pop_back();
+        switch (c) {
+            case 'k':
+                value *= 1024;
+                break;
+            case 'm':
+                value *= 1024 * 1024;
+                break;
+            case 'g':
+                value *= 1024 * 1024 * 1024;
+                break;
+        }
+    }
     if (sq_str[0].find_first_not_of("0123456789") != std::string::npos)
         throw err_token_args();
-    location_set._cb_max_size = std::stoi(sq_str[0]);
+    location_set._cb_max_size = std::stoi(sq_str[0]) * value;
 }
 void ConfigParser::autoindex_handle(LocationSet& location_set, std::string &line)
 {

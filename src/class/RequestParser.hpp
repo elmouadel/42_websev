@@ -5,10 +5,11 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/12/14 16:58:51 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/06 08:57:12 by eabdelha         ###   ########.fr       */
+/*   Created: Invalid date        by                   #+#    #+#             */
+/*   Updated: 2023/01/09 17:13:59 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #ifndef REQUEST_PARSER_HPP
 #define REQUEST_PARSER_HPP
@@ -45,7 +46,9 @@ class RequestParser
         static void clen_handle(std::vector<std::string> &, const std::string &);
         static void tencod_handle(std::vector<std::string> &, const std::string &);
         static void connect_handle(std::vector<std::string> &, const std::string &);
-        
+        static void if_modif_handle(std::vector<std::string> &, const std::string &);
+        static void if_nmatch_handle(std::vector<std::string> &, const std::string &);
+        static void cookie_handle(std::vector<std::string> &, const std::string &);
 };
 
 #endif

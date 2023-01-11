@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 10:11:57 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/04 15:39:44 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/11 13:31:37 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ class BodyUnchunker
     int             _case;
     bool            _is_done;
     size_t          _remain_len;
-    size_t          _begin_h;       // this will be use as refrence to the begining of the number or string
+    size_t          _begin_h;
     size_t          _chunk_len;
     std::string*    _rbody;
     

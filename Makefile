@@ -6,14 +6,14 @@
 #    By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/15 08:46:38 by eabdelha          #+#    #+#              #
-#    Updated: 2023/01/04 12:26:55 by eabdelha         ###   ########.fr        #
+#    Updated: 2023/01/11 13:32:47 by eabdelha         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 .PHONY : all clean fclean re 
 
 CC = c++
-CFLAGS = -Wall -Wextra -Werror -std=c++98
+CFLAGS = -Wall -Wextra -Werror -std=c++98 #-fsanitize=address -fsanitize=undefined
 
 NAME = webserv
 
@@ -26,8 +26,7 @@ INC_PATH = ./src/incl/
 
 OBJ_PATH = ./obj/
 
-INCLUDES =	$(INC_PATH)ServerSettings.hpp		\
-			$(INC_PATH)MiniStructs.hpp			\
+INCLUDES =	$(INC_PATH)mini_structs.hpp			\
 			$(INC_PATH)exceptions.hpp			\
 			$(INC_PATH)macros.hpp				\
 			$(INC_PATH)utils.hpp				\

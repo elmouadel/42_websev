@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 12:10:10 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/06 12:02:07 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/11 12:19:11 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,8 @@ RecvHandler::RecvHandler() : _is_done(0), _is_head(1), _is_cgi(0), _is_chunk(0),
 _rlength(0), _cgi_wlen(0), _icgi_fd(0), _servers(nullptr), _location(nullptr), _unchunker(nullptr)
 {
     _rhead.resize(BUF_SIZE);
-    _r_fields.resize(9);
-    _s_fields.resize(7);
+    _r_fields.resize(12);
+    _s_fields.resize(10);
     _s_fields[HS_LCRLF] = "\r\n";
 }
 RecvHandler::~RecvHandler()
@@ -41,18 +41,20 @@ void RecvHandler::init_variables(void)
     _rlength = 0;
     _cgi_wlen = 0;
     _icgi_fd = 0;
+    _is_close = 1;
     _rhead.clear();
     _rhead.resize(BUF_SIZE);
     _rbody.clear();
     _chunk_h.clear();
     _r_fields.clear();
-    _r_fields.resize(9);
+    _r_fields.resize(12);
     _s_fields.clear();
-    _s_fields.resize(7);
+    _s_fields.resize(10);
     _location = nullptr;
     delete _unchunker;
     _unchunker = nullptr;
     _s_fields[HS_LCRLF] = "\r\n";
+    _location = &get_matched_server(_servers)->_locations[0];
 }
 /******************************************************************************/
 /*                              getters-setters                               */
@@ -181,7 +183,7 @@ void RecvHandler::recv_head(int fd, int &ndata)
         if (rdata == -1)
             throw server_error(std::string("error: recv: ") + ::strerror(errno));
         if (rdata == 0)
-            throw server_error(std::string("Connection closed by client."));
+            throw server_error(std::string("recv: Connection closed by client."));
         ndata -= rdata;
     } while (ndata > 0);
     dcrlf = find_dcrlf(_rhead, hif);
@@ -208,14 +210,14 @@ void RecvHandler::recv_head(int fd, int &ndata)
         {
             std::cerr << e.what() << '\n';
             _s_fields[HS_STCODE] = SC_500;
-            build_body(*_response, _s_fields, _location->_err_page);
+            build_body_error(*_response, _s_fields, _location->_err_page);
             build_header(_response->_head, _s_fields);
             _is_done = true;
         }
         catch (const response_status &e)
         {
             _s_fields[HS_STCODE] = e.what();
-            build_body(*_response, _s_fields, _location->_err_page);
+            build_body_error(*_response, _s_fields, _location->_err_page);
             build_header(_response->_head, _s_fields);
             _is_done = true;
         }
@@ -246,7 +248,7 @@ void RecvHandler::recv_body(int fd, int ndata)
             if (rdata == -1)
                 throw server_error(std::string("error: recv: ") + ::strerror(errno));
             if (rdata == 0)
-                throw server_error(std::string("Connection closed by client."));
+                throw server_error(std::string("recv: Connection closed by client."));
             ndata -= rdata;
         }
         if (_rlength == _rbody.length())
@@ -288,7 +290,7 @@ void RecvHandler::recv_chunked_body(int fd, int ndata)
             if (rdata == -1)
                 throw server_error(std::string("error: recv: ") + ::strerror(errno));
             if (rdata == 0)
-                throw server_error(std::string("Connection closed by client."));
+                throw server_error(std::string("recv: Connection closed by client."));
             ndata -= rdata;
         } while (ndata > 0);
     }
@@ -308,9 +310,6 @@ void RecvHandler::recv_chunked_body(int fd, int ndata)
 /******************************************************************************/
 void RecvHandler::build_post_response(void)
 {
-    // out(_rhead)
-    // out("_________________________________________________________________");
-    // out(_rbody);
     try
     {
         if (!_is_cgi)
@@ -337,7 +336,10 @@ void RecvHandler::build_post_response(void)
             if (pos == std::string::npos)
                 pos = 0;
             if (pos)
+            {
                 _s_fields[HS_LCRLF] = "";
+                get_status_from_cgi_response(std::string(_response->_body, _response->_body + pos), _s_fields[HS_STCODE]);
+            }
                 
             size_t clen = _response->_body_len - pos;
             _s_fields[HS_CNTLEN] = std::to_string(clen);
@@ -351,14 +353,14 @@ void RecvHandler::build_post_response(void)
     {
         std::cerr << e.what() << '\n';
         _s_fields[HS_STCODE] = SC_500;
-        build_body(*_response, _s_fields, _location->_err_page);
+        build_body_error(*_response, _s_fields, _location->_err_page);
         build_header(_response->_head, _s_fields);
         _is_done = true;
     }
     catch (const response_status &e)
     {
         _s_fields[HS_STCODE] = e.what();
-        build_body(*_response, _s_fields, _location->_err_page);
+        build_body_error(*_response, _s_fields, _location->_err_page);
         build_header(_response->_head, _s_fields);
         _is_done = true;
     }

@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/23 22:25:40 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/03 09:02:03 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/11 13:34:47 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 # include <fcntl.h>
 # include <unistd.h>
 # include <signal.h>
-# include "../incl/ServerSettings.hpp"
+# include "../incl/mini_structs.hpp"
 # include "../incl/exceptions.hpp"
 # include "../incl/macros.hpp"
 

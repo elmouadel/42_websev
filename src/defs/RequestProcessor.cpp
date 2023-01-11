@@ -6,12 +6,17 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/15 22:44:42 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/06 10:45:13 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/11 11:09:40 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../class/RequestProcessor.hpp"
 #include "../../ztrash/debug.h"
+
+/******************************************************************************/
+/*                          init static variables                             */
+/******************************************************************************/
+std::unordered_map<std::string, std::string> RequestProcessor::etags;
 
 /******************************************************************************/
 /*                            construct-destruct                              */
@@ -42,7 +47,6 @@ bool RequestProcessor::process_request(void)
 {
     size_t      pos;
 
-    // out ((*_r_fields)[HR_URL]) // space in url
     pos = (*_r_fields)[HR_RURL].find_last_of("?");
     if (pos != std::string::npos)
     {
@@ -54,6 +58,8 @@ bool RequestProcessor::process_request(void)
         get_method_handler();
         return (true);
     }
+    else if ((*_r_fields)[HR_METHOD] == "DELETE")
+        delete_method_handler();
     else if ((*_r_fields)[HR_METHOD] == "POST")
         return (false);
     return (true);
@@ -98,12 +104,52 @@ void RequestProcessor::get_method_handler(void)
             throw response_status(SC_404);
     }
     else
+        throw response_status(SC_404); 
+}
+
+void RequestProcessor::delete_method_handler(void)
+{
+    struct stat file_info;
+    
+    if (stat((*_r_fields)[HR_RURL].data(), &file_info) == 0)
+    {
+        if (file_info.st_mode & S_IFREG)
+        {
+            int rc = std::remove((*_r_fields)[HR_RURL].data());
+            if (rc == 0) 
+                (*_s_fields)[HS_STCODE] = SC_204;
+            else 
+                throw response_status(SC_409);
+        }
+        else
+            throw response_status(SC_404);
+    }
+    else
         throw response_status(SC_404);
         
 }
+
+
 void RequestProcessor::get_response_body(const char *file)
 {
+    struct stat file_info;
+    struct tm   tm;
+    
+    if (stat((*_r_fields)[HR_RURL].data(), &file_info) == 0)
+    {
+        (*_s_fields)[HS_LTMODIF] = get_date(file_info.st_mtimespec.tv_sec);
+        if (is_etaged_resource(file))
+        {    
+            if (strptime((*_r_fields)[HR_IFMODIF].data(), "%a, %d %b %Y %H:%M:%S %Z", &tm) != NULL) 
+            {
+                time_t if_modif = mktime(&tm);
+                if (if_modif >= file_info.st_mtimespec.tv_sec)
+                    throw response_status(SC_304);
+            }
+        }
+    }
     mmap_file(*_response, file);
+    
     (*_s_fields)[HS_STCODE] = SC_200;
 
     (*_s_fields)[HS_CNTLEN] = std::to_string(_response->_body_len);
@@ -122,7 +168,11 @@ void RequestProcessor::get_response_cgi_body(const char *file)
     if (pos == std::string::npos)
         pos = 0;
     if (pos)
+    {
         (*_s_fields)[HS_LCRLF] = "";
+        get_status_from_cgi_response(std::string(_response->_body, _response->_body + pos), (*_s_fields)[HS_STCODE]);
+    }
+
     size_t clen = _response->_body_len - pos;
     (*_s_fields)[HS_CNTLEN] = std::to_string(clen);
     (*_s_fields)[HS_CTYP] = get_content_type(file);
@@ -158,6 +208,29 @@ void RequestProcessor::check_is_allowed_method(void)
         }
     }
 }
+
+bool RequestProcessor::is_etaged_resource(const char* file)
+{
+    std::unordered_map<std::string, std::string>::iterator it;
+
+    it = etags.find(file);
+    if (it == etags.end())
+    {
+        ft_hash(file, etags[file]);
+        (*_s_fields)[HS_ETAG] = std::string("\"") + etags[file] + "\"";        
+    }
+    else
+    {
+        if ((*_r_fields)[HR_ETAG] == it->second)
+        {
+            (*_s_fields)[HS_ETAG] = std::string("\"") + it->second + "\"";
+            return (1);
+        }
+        else
+            (*_s_fields)[HS_ETAG] = std::string("\"") + it->second + "\"";
+    }
+    return (0);
+}
 /******************************************************************************/
 /*                               list directory                               */
 /******************************************************************************/
@@ -166,33 +239,30 @@ void RequestProcessor::list_directory(void)
 {
     DIR*            dir;
     struct dirent*  entry;
-    std::string     flist;
 
+    (*_s_fields)[HS_AUTONDX].resize(BUF_SIZE);
     dir = opendir((*_r_fields)[HR_RURL].data());
     if (!dir)
         throw server_error(std::string("error: opendir: ") + ::strerror(errno));
     if ((*_r_fields)[HR_URL].back() != '/')
         (*_r_fields)[HR_URL].push_back('/');
-    flist.assign("<!DOCTYPE html><html><head></head><body>");
-    flist.append("<h1>Directory listing for ");
-    flist.append((*_r_fields)[HR_URL] + "</h1>");
-    flist.append("<hr><ul>");
+    (*_s_fields)[HS_AUTONDX].assign("<!DOCTYPE html><html><head></head><body>");
+    (*_s_fields)[HS_AUTONDX].append("<h1>Directory listing for ");
+    (*_s_fields)[HS_AUTONDX].append((*_r_fields)[HR_URL] + "</h1>");
+    (*_s_fields)[HS_AUTONDX].append("<hr><ul>");
     while ((entry = readdir(dir)) != nullptr)
     {
-        if (std::string(entry->d_name) == ".." || std::string(entry->d_name) == ".")
+        if (std::string(entry->d_name) == ".")
             continue;
-        flist.append("<li><a href=\"");
-        flist.append((*_r_fields)[HR_URL]);
-        flist.append(entry->d_name);
-        flist.append("\">");
-        flist.append(entry->d_name);
-        flist.append("</a></li>");
+        (*_s_fields)[HS_AUTONDX].append("<li><a href=\"");
+        (*_s_fields)[HS_AUTONDX].append((*_r_fields)[HR_URL]);
+        (*_s_fields)[HS_AUTONDX].append(entry->d_name);
+        (*_s_fields)[HS_AUTONDX].append("\">");
+        (*_s_fields)[HS_AUTONDX].append(entry->d_name);
+        (*_s_fields)[HS_AUTONDX].append("</a></li>");
     }
-    flist.append("</ul><hr></body></html>");
+    (*_s_fields)[HS_AUTONDX].append("</ul><hr></body></html>");
     closedir(dir);
-    _response->_body = (char*)malloc(flist.size());
-    _response->_body_len = flist.size();
-    memcpy(_response->_body, flist.data(), flist.size());
     (*_s_fields)[HS_STCODE] = SC_200;
-    (*_s_fields)[HS_CNTLEN] = std::to_string(flist.size());
+    (*_s_fields)[HS_CNTLEN] = std::to_string((*_s_fields)[HS_AUTONDX].size());
 }

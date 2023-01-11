@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 21:59:21 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/29 17:58:34 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/11 13:27:53 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 #define CONFIG_PARSER_HPP
 
 # include <string>
+# include <cstring>
 # include <fstream>
 # include <iostream>
-# include "../incl/ServerSettings.hpp"
 # include "../incl/exceptions.hpp"
 # include "../incl/utils.hpp"
 

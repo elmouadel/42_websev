@@ -1,23 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ServerSettings.hpp                                 :+:      :+:    :+:   */
+/*   mini_structs.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/12/13 21:59:41 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/28 17:32:12 by eabdelha         ###   ########.fr       */
+/*   Created: 2022/12/14 14:14:44 by eabdelha          #+#    #+#             */
+/*   Updated: 2023/01/11 12:38:43 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef SERVER_SETTINGS_HPP
-#define SERVER_SETTINGS_HPP
+#ifndef MINI_STRUCTS_HPP
+#define MINI_STRUCTS_HPP
+
 
 # include <set>
 # include <map>
 # include <vector>
 # include <string>
 # include <utility>
+# include <sys/mman.h>
+
 
 struct LocationSet
 {
@@ -57,8 +60,24 @@ struct ServerSet
     std::set<std::string>       _server_name;
     std::string                 _address;
     int                         _port;
-    ServerSet() : _address("127.0.0.1"), _port(8080) {}
+    ServerSet() : _address("0.0.0.0"), _port(8080) {}
     ~ServerSet() {}
+};
+
+struct Response
+{
+    std::string _head;
+    char*       _body;
+    size_t      _body_len;
+    bool        _is_mapped;
+    Response() : _body(nullptr), _body_len(0), _is_mapped(0) 
+    {
+    }
+    ~Response() 
+    {
+        if (_is_mapped)
+            munmap((void*)_body, _body_len);
+    }
 };
 
 #endif

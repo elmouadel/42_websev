@@ -6,13 +6,13 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/20 11:14:28 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/29 17:58:34 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/11 13:32:51 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <vector>
 #include <iostream>
-#include "./incl/ServerSettings.hpp"
+#include "./incl/mini_structs.hpp"
 #include "./class/ConfigParser.hpp"
 #include "./class/ServerLauncher.hpp"
 
@@ -21,6 +21,11 @@ int main(int ac, char **av)
     if (ac != 2)
     {
         std::cerr << "error: bad number of arguments!." << '\n';
+        return (1);
+    }
+    else if (std::string(av[1]).find(".conf") != std::string(av[1]).length() - 5)
+    {
+        std::cerr << "error: bad cofig file extension!." << '\n';
         return (1);
     }
     try
@@ -34,7 +39,6 @@ int main(int ac, char **av)
         ServerLauncher server_launcher(&server_set);
         server_launcher.launch_routines();
         server_launcher.core_server_loop();
-        
     }
     catch(const std::exception &e)
     {

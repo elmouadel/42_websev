@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 12:07:27 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/06 11:05:24 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/11 13:34:47 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,7 @@
 # include <sys/socket.h>
 # include "../incl/utils.hpp"
 # include "../incl/exceptions.hpp"
-# include "../incl/MiniStructs.hpp"
-# include "../incl/ServerSettings.hpp"
+# include "../incl/mini_structs.hpp"
 # include "../class/SendHandler.hpp"
 # include "../class/RequestParser.hpp"
 # include "../class/RequestProcessor.hpp"

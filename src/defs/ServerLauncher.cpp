@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 11:27:06 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/06 12:01:15 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/09 10:48:03 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,20 +36,33 @@ void ServerLauncher::core_server_loop(void)
     size_t                      nev;
     std::vector<struct kevent>  o_events;
     
-    o_events.reserve(NB_OEVENTS);
+    o_events.resize(NB_OEVENTS);
     for (;;)
     {
         nev =  this->kevent(o_events);
         
         for (size_t i = 0; i < nev; ++i)
         {
-            if (o_events[i].filter == EVFILT_READ)
+            int     fd = o_events[i].ident;
+            int     ndata = o_events[i].data;
+            void*   handler = o_events[i].udata;
+            
+            if (o_events[i].flags & EV_ERROR || o_events[i].flags & EV_EOF)
             {
-                if (!o_events[i].udata)
+                toggle_event(fd, EVFILT_TIMER, EV_DELETE);
+                toggle_event(fd, o_events[i].filter, EV_DELETE);
+                _rhandl.erase(fd);
+                _shandl.erase(fd);
+                _responses.erase(fd);
+                close(fd);
+            }   
+            else if (o_events[i].filter == EVFILT_READ)
+            {
+                if (!handler)
                 {
                     try
                     {
-                        this->accept(o_events[i].ident, o_events[i].data);
+                        this->accept(fd);
                     }
                     catch (std::exception &e)
                     {
@@ -57,15 +70,19 @@ void ServerLauncher::core_server_loop(void)
                     }
                 }
                 else
-                {   
-                    int cgi_fd;
-                    recv_event_handler(o_events[i]);
-                    cgi_fd = ((RecvHandler*)o_events[i].udata)->get_cgi_fd();
-                    if (cgi_fd) // only once after cgi execution
+                {
+                    toggle_event(fd, EVFILT_TIMER, EV_DELETE);
+                    initiate_timeout(fd);
+                    
+                    if (recv_event_handler(fd, ndata, RECV_CAST(handler)))
                     {
-                        toggle_event(o_events[i].ident, EVFILT_READ, EV_DELETE);
-                        _icgi[cgi_fd] = &_rhandl[o_events[i].ident];
-                        toggle_event(cgi_fd, EVFILT_WRITE, EV_ADD | EV_CLEAR, _icgi[cgi_fd]);
+                        int cgi_fd = RECV_CAST(handler)->get_cgi_fd();
+                        if (cgi_fd) // only once after cgi execution
+                        {
+                            toggle_event(fd, EVFILT_READ, EV_DELETE);
+                            _icgi[cgi_fd] = &_rhandl[fd];
+                            toggle_event(cgi_fd, EVFILT_WRITE, EV_ADD | EV_CLEAR, _icgi[cgi_fd]);
+                        }
                     }
                 }
             }
@@ -73,66 +90,91 @@ void ServerLauncher::core_server_loop(void)
             {
                 try
                 {
-                    if (_icgi.find(o_events[i].ident) != _icgi.end())
-                        recv_event_handler(o_events[i]);
+                    if (_icgi.find(fd) != _icgi.end())
+                        recv_event_handler(fd, ndata, RECV_CAST(handler));
                     else
-                        ((SendHandler*)o_events[i].udata)->operator()(o_events[i].ident, o_events[i].data);
+                    {
+                        toggle_event(fd, EVFILT_TIMER, EV_DELETE);
+                        initiate_timeout(fd);
+                        SEND_CAST(handler)->operator()(fd, ndata);
+                    }
+                    if (SEND_CAST(handler)->get_is_done())
+                    {
+                        toggle_event(fd, EVFILT_WRITE, EV_DELETE);
+                        _responses.erase(fd);
+                        if (SEND_CAST(handler)->get_is_close())
+                        {
+                            close(fd);
+                        }
+                        else
+                        {
+                            toggle_event(fd, EVFILT_READ, EV_ADD | EV_CLEAR, &_rhandl[fd]);
+                            _rhandl[fd].set_response(&_responses[fd]);
+                        }
+                        _shandl.erase(fd);
+                    }
                 }
                 catch(const std::exception& e)
                 {
                     std::cerr << e.what() << '\n';
-                    toggle_event(o_events[i].ident, EVFILT_WRITE, EV_DELETE);
-                    _shandl.erase(o_events[i].ident);
-                    _responses.erase(o_events[i].ident);
-                    close(o_events[i].ident);
+                    toggle_event(fd, EVFILT_WRITE, EV_DELETE);
+                    if (!SEND_CAST(handler)->get_is_close())
+                        _rhandl.erase(fd);
+                    _shandl.erase(fd);
+                    _responses.erase(fd);
+                    close(fd);
                 }
-                if (((SendHandler*)o_events[i].udata)->get_is_done())
-                {
-                    toggle_event(o_events[i].ident, EVFILT_WRITE, EV_DELETE);
-                    _shandl.erase(o_events[i].ident);
-                    _responses.erase(o_events[i].ident);
-                    if (_rhandl[o_events[i].ident].get_is_close())
-                    {
-                        close(o_events[i].ident);
-                    }
-                    else
-                    {
-                        toggle_event(o_events[i].ident, EVFILT_READ, EV_ADD | EV_CLEAR, &_rhandl[o_events[i].ident]);
-                        _rhandl[o_events[i].ident].set_response(&_responses[o_events[i].ident]);
-                    }
-                }
+            }
+            else if (o_events[i].filter == EVFILT_TIMER)
+            {
+                toggle_event(fd, EVFILT_READ, EV_DELETE);
+                toggle_event(fd, EVFILT_WRITE, EV_DELETE);
+                toggle_event(fd, EVFILT_TIMER, EV_DELETE);
+                _rhandl.erase(fd);
+                _shandl.erase(fd);
+                _responses.erase(fd);
+                close(fd);
             }
         }
     }
 }
-void ServerLauncher::recv_event_handler(struct kevent &o_event)
+bool ServerLauncher::recv_event_handler(int fd, int ndata, RecvHandler* handler)
 {
     try
     {
-        ((RecvHandler*)o_event.udata)->operator()(o_event.ident, o_event.data);
+        handler->operator()(fd, ndata);
+        if (handler->get_is_done())
+        {
+            int             sock_fd;
+            SendHandler*    send_handl;
+            
+            sock_fd = handler->get_sock_fd();
+            send_handl = &_shandl[sock_fd];
+            
+            send_handl->set_response(&_responses[sock_fd]);
+            send_handl->set_is_close(handler->get_is_close());
+            
+            toggle_event(sock_fd, EVFILT_READ, EV_DELETE);
+            toggle_event(sock_fd, EVFILT_WRITE, EV_ADD | EV_CLEAR, send_handl);
+            if (!handler->get_cgi_fd())
+                _icgi.erase(fd);
+            if (handler->get_is_close())
+                _rhandl.erase(sock_fd);
+            else
+                handler->init_variables();
+            return (0);
+        }
     }
     catch(const std::exception& e) // program get here only before cgi launch
     {
         std::cerr << e.what() << '\n';
-        toggle_event(o_event.ident, EVFILT_READ, EV_DELETE);
-        _rhandl.erase(o_event.ident);
-        out("close1")
-        close(o_event.ident);
-        return;
+        toggle_event(fd, EVFILT_READ, EV_DELETE);
+        _rhandl.erase(fd);
+        _responses.erase(fd);
+        close(fd);
+        return (0);
     }
-    if (((RecvHandler*)o_event.udata)->get_is_done())
-    {
-        int sock_fd = ((RecvHandler*)o_event.udata)->get_sock_fd();
-        _shandl[sock_fd].set_response(&_responses[sock_fd]);
-        toggle_event(sock_fd, EVFILT_WRITE, EV_ADD | EV_CLEAR, &_shandl[sock_fd]);
-        toggle_event(o_event.ident, EVFILT_READ, EV_DELETE);
-        if (((RecvHandler*)o_event.udata)->get_is_close())
-            _rhandl.erase(sock_fd);
-        else
-            ((RecvHandler*)o_event.udata)->init_variables();
-        if (!((RecvHandler*)o_event.udata)->get_cgi_fd())
-            _icgi.erase(o_event.ident);
-    }
+    return (1);
 }
 
 /******************************************************************************/
@@ -180,6 +222,7 @@ void ServerLauncher::socket(void)
 void ServerLauncher::setsockopt(void)
 {
     int enable = 1;
+    
     if (::setsockopt(_sock_fds.back(), SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
         throw err_strerror(std::string("setsockopt: "));
     if (::setsockopt(_sock_fds.back(), SOL_SOCKET, SO_NOSIGPIPE, &enable, sizeof(int)) < 0)
@@ -214,23 +257,22 @@ int ServerLauncher::kevent(std::vector<struct kevent> &o_events)
     return (rc);
 }
 
-void ServerLauncher::accept(int fd, int ndata)
+void ServerLauncher::accept(int fd)
 {
-    std::vector<struct kevent>  i_events;
+    struct kevent   event;
+    
+    int rc = ::accept(fd, NULL, NULL);
+    if (rc < 0)
+        throw err_strerror(std::string("accept: "));
 
-    while (ndata--)
-    {
-        int rc = ::accept(fd, NULL, NULL);
-        if (rc < 0)
-            throw err_strerror(std::string("accept: "));
-        i_events.push_back((struct kevent){});
-        EV_SET(&i_events.back(), rc, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, &_rhandl[rc]);
-        _rhandl[rc].set_servers(&_pair_fd_servers[fd]);
-        _rhandl[rc].set_response(&_responses[rc]);
-        _rhandl[rc].set_sock_fd(rc);
-    }
-    ::kevent(_kq, i_events.data(), i_events.size(), NULL, 0, 0);
+    initiate_timeout(rc);
+    EV_SET(&event, rc, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, &_rhandl[rc]);
+    _rhandl[rc].set_servers(&_pair_fd_servers[fd]);
+    _rhandl[rc].set_response(&_responses[rc]);
+    _rhandl[rc].set_sock_fd(rc);
+    ::kevent(_kq, &event, 1, NULL, 0, 0);
 }
+
 
 /******************************************************************************/
 /*                            utility functions                               */
@@ -239,10 +281,11 @@ void ServerLauncher::accept(int fd, int ndata)
 void ServerLauncher::enable_socket_monitoring(void)
 {
     std::vector<struct kevent>  i_events;
+    
     for (size_t i = 0; i < _sock_fds.size(); ++i)
     {
         i_events.push_back((struct kevent){});
-        EV_SET(&i_events.back(), _sock_fds[i], EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, NULL);
+        EV_SET(&i_events.back(), _sock_fds[i], EVFILT_READ, EV_ADD , 0, 0, NULL);
     }
     ::kevent(_kq, i_events.data(), i_events.size(), NULL, 0, 0);
 }
@@ -252,5 +295,18 @@ void ServerLauncher::toggle_event(size_t fd, int16_t filter, uint16_t flags, voi
     struct kevent event;
 
     EV_SET(&event, fd, filter, flags, 0, 0, udata);
+    ::kevent(_kq, &event, 1, NULL, 0, 0);
+}
+void ServerLauncher::initiate_timeout(int fd)
+{
+    struct kevent   event;
+    struct timespec timeout;
+    size_t          time_limit;
+
+    timeout.tv_sec = 70; 
+    timeout.tv_nsec = 0;
+    time_limit = timeout.tv_sec * 1000 + timeout.tv_nsec / 1000000;
+
+    EV_SET(&event, fd, EVFILT_TIMER, EV_ADD | EV_CLEAR, 0, time_limit, nullptr);
     ::kevent(_kq, &event, 1, NULL, 0, 0);
 }

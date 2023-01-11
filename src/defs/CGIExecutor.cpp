@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/23 22:25:38 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/06 08:32:00 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/09 18:47:34 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,10 +36,10 @@ CGIExecutor::CGIExecutor(std::vector<std::string>& _r_fields, LocationSet& _loca
     _env[ENV_SCRIPT_FILENAME] = std::string("SCRIPT_FILENAME=") + _r_fields[HR_RURL];
     _env[ENV_SCRIPT_NAME] = std::string("SCRIPT_NAME=") + _r_fields[HR_RURL];
     _env[ENV_SERVER_NAME] = std::string("SERVER_NAME=") + "127.0.0.1";
-    // _env[ENV_SERVER_PORT] = std::string("SERVER_PORT=") + "8000";
     _env[ENV_SERVER_SOFTWARE] = std::string("SERVER_SOFTWARE=") + "nginy/1.33.7";
     _env[ENV_SERVER_PROTOCOL] = std::string("SERVER_PROTOCOL=") + "HTTP/1.1";
     _env[ENV_GATEWAY_INTERFACE] = std::string("GATEWAY_INTERFACE=") + "CGI/1.1";
+    _env[ENV_HTTP_COOKIE] = std::string("HTTP_COOKIE=") + _r_fields[HR_COOKIE];
     _env[ENV_REDIRECT_STATUS] = std::string("REDIRECT_STATUS=") + "0";
     if (ext == "php")
         _env[ENV_PHP_INI_SCAN_DIR] = std::string("PHP_INI_SCAN_DIR=") + pwd + "/config/";

@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 12:07:14 by eabdelha          #+#    #+#             */
-/*   Updated: 2022/12/30 11:39:37 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/11 14:12:08 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,14 @@ void SendHandler::set_is_done(bool _sv)
 {
     _is_done = _sv;
 }
+bool SendHandler::get_is_close(void)
+{
+    return (_is_close);
+}
+void SendHandler::set_is_close(bool _sv)
+{
+    _is_close = _sv;
+}
 /******************************************************************************/
 /*                                 fonctor                                    */
 /******************************************************************************/
@@ -49,17 +57,22 @@ void SendHandler::set_is_done(bool _sv)
 void SendHandler::operator()(int fd, int ndata)
 {
     int wdata = 0;
+    
     do
     {
+        // char peek;
+        // int rc = recv(fd, &peek, sizeof(peek), MSG_PEEK);
+        // if (rc == 0)
+        //     throw server_error(std::string("send: Connection closed by client."));
         _wlength += wdata = ::send(fd, (void *)(&_buf_switch[_wlength]), _buf_switch_len - _wlength, 0);
         if (wdata == -1) 
             throw server_error(std::string("error: send: ") + ::strerror(errno));
         if (wdata == 0) 
-            throw server_error(std::string("Connection closed by client."));
+            throw server_error(std::string("send: connection closed by client."));
         ndata -= wdata;
     } while (_wlength < _buf_switch_len && ndata > 0);
 
-    if (!_is_body && _wlength == _buf_switch_len)
+    if (!_is_body && _wlength == _buf_switch_len && _response->_body_len)
     {
         _buf_switch = _response->_body;
         _buf_switch_len = _response->_body_len;

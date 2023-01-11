@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 10:14:55 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/05 15:28:04 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/11 13:43:06 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,9 @@ void BodyUnchunker::append_remain_str(std::string& chunk)
     _case = 2;
 }
 
-
+/******************************************************************************/
+/*                                parse chunked                               */
+/******************************************************************************/
 int BodyUnchunker::parse_chunked_body(std::string& chunk)
 {
     try

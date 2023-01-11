@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 16:59:26 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/06 11:07:05 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/09 18:47:26 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,9 @@ bool init_assign_handl(std::map<std::string, handler> &vmap)
     vmap["content-length"] = RequestParser::clen_handle;
     vmap["transfer-encoding"] = RequestParser::tencod_handle;
     vmap["connection"] = RequestParser::connect_handle;
+    vmap["if-modified-since"] = RequestParser::if_modif_handle;
+    vmap["if-none-match"] = RequestParser::if_nmatch_handle;
+    vmap["cookie"] = RequestParser::cookie_handle;
     return (1);
 }
 bool init_methods_listl(std::set<std::string> &vset)
@@ -99,18 +102,8 @@ void RequestParser::clen_handle(std::vector<std::string> &fileds, const std::str
 
 void RequestParser::ctyp_handle(std::vector<std::string> &fileds, const std::string &header)
 {
-    std::string word;
     size_t      pos;
-    
-    get_first_word(header, word);
-    if (is_empty(word))
-        throw response_status(SC_400);
-    // if (fileds[HR_METHOD] == "POST")
-    // {
-    //     std::transform(word.begin(), word.end(), word.begin(), ::tolower);
-    //     if (word != "multipart/form-data")
-    //         throw response_status(SC_415);
-    // }
+
     pos = header.find_first_not_of(" ");
     fileds[HR_CTYP] = header.substr(pos, header.find_first_of("\r\n") - pos);
 }
@@ -122,6 +115,37 @@ void RequestParser::connect_handle(std::vector<std::string> &fileds, const std::
     get_first_word(header, word);
     std::transform(word.begin(), word.end(), word.begin(), ::tolower);
     fileds[HR_CONNECT] = word;
+}
+void RequestParser::if_modif_handle(std::vector<std::string> &fileds, const std::string &header)
+{
+    size_t      pos;
+
+    pos = header.find_first_not_of(" ");
+    fileds[HR_IFMODIF] = header.substr(pos, header.find_first_of("\r\n") - pos);
+    pos = fileds[HR_IFMODIF].find("+01");
+    if (pos != std::string::npos)
+    {
+        fileds[HR_IFMODIF].erase(pos, 3);
+        fileds[HR_IFMODIF].insert(pos, "GMT");
+    }
+}
+void RequestParser::if_nmatch_handle(std::vector<std::string> &fileds, const std::string &header)
+{
+    size_t      pos1;
+    size_t      pos2;
+
+    pos1 = header.find_first_of("\"");
+    pos2 = header.find_last_of("\"");
+
+    if (pos1 != std::string::npos && pos2 != std::string::npos)
+        fileds[HR_ETAG] = header.substr(pos1 + 1, pos2 - pos1 - 1);
+}
+void RequestParser::cookie_handle(std::vector<std::string> &fileds, const std::string &header)
+{
+    size_t      pos;
+
+    pos = header.find_first_not_of(" ");
+    fileds[HR_COOKIE] = header.substr(pos, header.find_first_of("\r\n") - pos);
 }
 /******************************************************************************/
 /*                           header parsing functions                         */

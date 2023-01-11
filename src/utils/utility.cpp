@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/22 15:36:25 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/01 10:34:58 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/08 22:51:16 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,12 +152,28 @@ bool is_cgi(std::vector<std::string> r_fields, std::map<std::string, std::string
     return (false);
 }
 
-std::string	get_date(void)
+std::string	get_date(time_t  now)
 {
     char    buf[100];
-    time_t  now = time(0);
     tm      *_tm = localtime(&now);
     
     strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S %Z", _tm);
     return (std::string(buf));
+}
+
+void    ft_hash(const char* file, std::string &etag)
+{
+    size_t              value;
+    struct stat         file_info;
+    std::stringstream   ss;
+    
+    value = 0;
+    for (int i = 0; file[i]; ++i)
+        value += (size_t)file[i] * 3 * (i + 1);
+    
+    if (stat(file, &file_info) == 0)
+        ss << std::hex << file_info.st_mtimespec.tv_sec;
+    ss << "-";
+    ss << std::hex << value;
+    etag = ss.str();
 }

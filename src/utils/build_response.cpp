@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/15 21:42:10 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/06 10:46:09 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/11 11:17:28 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,6 +165,7 @@ std::string get_content_type(const char *file)
 
 void build_header(std::string &header, std::vector<std::string> &s_fields)
 {
+    // header.reserve(1024);
     header.assign("HTTP/1.1 ");
     header.append(s_fields[HS_STCODE]);
     header.append("\r\n");
@@ -202,13 +203,29 @@ void build_header(std::string &header, std::vector<std::string> &s_fields)
         header.append(s_fields[HS_CONNECT]);
         header.append("\r\n");
     }
+    if (!s_fields[HS_LTMODIF].empty())
+    {
+        header.append("Last-Modified: ");
+        header.append(s_fields[HS_LTMODIF]);
+        header.append("\r\n");
+    }
+    if (!s_fields[HS_ETAG].empty())
+    {
+        header.append("ETag: ");
+        header.append(s_fields[HS_ETAG]);
+        header.append("\r\n");
+    }
     header.append(s_fields[HS_LCRLF]);
+    if (!s_fields[HS_AUTONDX].empty())
+        header.append(s_fields[HS_AUTONDX]);
 }
 
-void build_body(Response &response, std::vector<std::string> &s_fields, std::map<int, std::string> err_page)
+void build_body_error(Response &response, std::vector<std::string> &s_fields, std::map<int, std::string> err_page)
 {
     std::string &file = err_page[stoi(s_fields[HS_STCODE].substr(0, 3))];
     
+    if (file.empty())
+        return;
     mmap_file(response, file.data());
     s_fields[HS_CNTLEN] = std::to_string(response._body_len);
     s_fields[HS_CTYP] = get_content_type(file.data());
@@ -248,4 +265,15 @@ void mmap_file(Response &response, const char *file)
     if (response._body == MAP_FAILED)
         throw server_error(std::string("error: mmap: ") + ::strerror(errno));
     response._is_mapped = true;
+}
+
+void get_status_from_cgi_response(const std::string &cgi_head, std::string &s_status)
+{
+    size_t pos = cgi_head.find("Status:");
+
+    if (pos != std::string::npos)
+    {
+        pos = cgi_head.find_first_not_of(" ", pos + 7);
+        s_status = cgi_head.substr(pos, cgi_head.find_first_of("\r\n") - pos);
+    }
 }
