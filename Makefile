@@ -6,14 +6,18 @@
 #    By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/15 08:46:38 by eabdelha          #+#    #+#              #
-#    Updated: 2023/01/11 13:32:47 by eabdelha         ###   ########.fr        #
+#    Updated: 2023/01/12 14:27:05 by eabdelha         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 .PHONY : all clean fclean re 
 
 CC = c++
-CFLAGS = -Wall -Wextra -Werror -std=c++98 #-fsanitize=address -fsanitize=undefined
+CFLAGS = -Wall -Wextra -Werror
+#-std=c++98
+#-Wuninitialized -Wshadow -Wunused -Wformat -Wparentheses \
+#-Wpedantic   -Wformat=2 -Wformat-security -Wnull-dereference -Wstack-protector -Wvla   \
+#-g -fsanitize=address -fsanitize=undefined -fsanitize=integer -fno-omit-frame-pointer
 
 NAME = webserv
 
@@ -53,7 +57,8 @@ SRC	=	main.cpp	\
 		BodyUnchunker.cpp			\
 		\
 		utility.cpp				\
-		build_response.cpp
+		build_response.cpp		\
+		exceptions.cpp			\
 	
 OBJECTS = $(addprefix $(OBJ_PATH), $(SRC:.cpp=.o))
 

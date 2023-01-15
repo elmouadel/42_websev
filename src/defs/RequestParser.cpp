@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 16:59:26 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/09 18:47:26 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/12 11:36:33 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,12 +122,12 @@ void RequestParser::if_modif_handle(std::vector<std::string> &fileds, const std:
 
     pos = header.find_first_not_of(" ");
     fileds[HR_IFMODIF] = header.substr(pos, header.find_first_of("\r\n") - pos);
-    pos = fileds[HR_IFMODIF].find("+01");
-    if (pos != std::string::npos)
-    {
-        fileds[HR_IFMODIF].erase(pos, 3);
-        fileds[HR_IFMODIF].insert(pos, "GMT");
-    }
+    // pos = fileds[HR_IFMODIF].find("+01");
+    // if (pos != std::string::npos)
+    // {
+    //     fileds[HR_IFMODIF].erase(pos, 3);
+    //     fileds[HR_IFMODIF].insert(pos, "GMT");
+    // }
 }
 void RequestParser::if_nmatch_handle(std::vector<std::string> &fileds, const std::string &header)
 {

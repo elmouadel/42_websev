@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/21 21:42:54 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/06 12:29:17 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/12 15:12:11 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,11 @@ void ConfigParser::listen_handle(std::string &line)
     if (str_hol.find(".") != std::string::npos)
         _server_set.back()._address = str_hol;
     else
-        _server_set.back()._port = stoi(str_hol);
+    {
+        if (str_hol.find_first_not_of("0123456789") != std::string::npos)
+            throw err_token_args();
+        _server_set.back()._port = ::strtoul(str_hol.data(), nullptr, 10);
+    }
 }
 void ConfigParser::name_handle(std::string &line)
 {
@@ -101,7 +105,7 @@ void ConfigParser::err_page_handle(LocationSet& location_set, std::string &line)
         throw err_token_args();
     if (sq_str[0].find_first_not_of("0123456789") != std::string::npos)
         throw err_token_args();
-    int tmp = std::stoi(sq_str[0]);
+    int tmp = ::strtoul(sq_str[0].data(), nullptr, 10);
     location_set._err_page[tmp] = sq_str[1];
 }
 void ConfigParser::redirect_handle(LocationSet& location_set, std::string &line)
@@ -116,7 +120,7 @@ void ConfigParser::redirect_handle(LocationSet& location_set, std::string &line)
         throw err_token_args();
     if (sq_str[0][sq_str[0].length() - 1] != '/')
         sq_str[0].push_back('/');
-    location_set._redirect = make_pair(sq_str[0], std::stoi(sq_str[1]));
+    location_set._redirect = make_pair(sq_str[0], ::strtoul(sq_str[1].data(), nullptr, 10));
 }
 void ConfigParser::index_handle(LocationSet& location_set, std::string &line)
 {
@@ -164,7 +168,7 @@ void ConfigParser::cb_max_size_handle(LocationSet& location_set, std::string &li
     if (sq_str.size() != 1)
         throw err_token_args();
     value = 1;
-    c = tolower(sq_str[0].back());
+    c = static_cast<char>(tolower(sq_str[0].back()));
     if (strchr("kmg", c) != NULL)
     {
         sq_str[0].pop_back();
@@ -182,7 +186,8 @@ void ConfigParser::cb_max_size_handle(LocationSet& location_set, std::string &li
     }
     if (sq_str[0].find_first_not_of("0123456789") != std::string::npos)
         throw err_token_args();
-    location_set._cb_max_size = std::stoi(sq_str[0]) * value;
+    location_set._cb_max_size = ::strtoul(sq_str[0].data(), nullptr, 10) * value;
+    
 }
 void ConfigParser::autoindex_handle(LocationSet& location_set, std::string &line)
 {
@@ -221,7 +226,6 @@ void ConfigParser::url_path_handle(std::string &line_hol)
                 throw err_token_args();
             // if (sq_str[0][sq_str[0].length() - 1] != '/')
             //     sq_str[0].push_back('/');
-            // std::cout << "url_path: " << sq_str[0] << "|" << std::endl;
             _server_set.back()._locations.back()._url_path = sq_str[0];
             return;
         }

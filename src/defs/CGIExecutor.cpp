@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/23 22:25:38 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/09 18:47:34 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/12 11:39:12 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,8 @@ CGIExecutor::CGIExecutor(std::vector<std::string>& _r_fields, LocationSet& _loca
     _env[ENV_CONTENT_LENGTH] = std::string("CONTENT_LENGTH=") + _r_fields[HR_CNTLEN].data();
     _env[ENV_PATH_INFO] = std::string("PATH_INFO=") + pwd + "/";
     _env[ENV_PATH_TRANSLATED] = std::string("PATH_TRANSLATED=") + pwd + "/";
-    _env[ENV_UPLOAD_DIR] = std::string("UPLOAD_DIR=") + pwd + "/" + _location._upload_dir + "/";
+    if (!_location._upload_dir.empty())
+        _env[ENV_UPLOAD_DIR] = std::string("UPLOAD_DIR=") + pwd + "/" + _location._upload_dir + "/";
     _env[ENV_QUERY_STRING] = std::string("QUERY_STRING=") + _r_fields[HR_QUERIES].data();
     _env[ENV_REQUEST_METHOD] = std::string("REQUEST_METHOD=") + _r_fields[HR_METHOD].data();
     _env[ENV_SCRIPT_FILENAME] = std::string("SCRIPT_FILENAME=") + _r_fields[HR_RURL];

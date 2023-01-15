@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/15 22:44:42 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/11 11:09:40 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/14 15:54:39 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 /******************************************************************************/
 /*                          init static variables                             */
 /******************************************************************************/
-std::unordered_map<std::string, std::string> RequestProcessor::etags;
+std::map<std::string, std::string> RequestProcessor::etags;
 
 /******************************************************************************/
 /*                            construct-destruct                              */
@@ -29,8 +29,11 @@ RequestProcessor::RequestProcessor(Response* _cv1, std::vector<std::string>* _cv
 {
     if (!(*_r_fields)[HR_CNTLEN].empty() && stoul((*_r_fields)[HR_CNTLEN]) > _location->_cb_max_size)
         throw response_status (SC_413);
-    (*_r_fields)[HR_RURL] = _location->_root + "/"\
-    + (*_r_fields)[HR_URL].substr(_location->_url_path.length(), (*_r_fields)[HR_URL].length());
+    (*_r_fields)[HR_RURL] = _location->_root;
+    if (_location->_url_path == "/")
+        (*_r_fields)[HR_RURL].push_back('/');
+    (*_r_fields)[HR_RURL].append((*_r_fields)[HR_URL].substr(_location->_url_path.length(), (*_r_fields)[HR_URL].length()));
+
     check_is_allowed_method();
     if ((*_r_fields)[HR_CONNECT] != "close")
         (*_s_fields)[HS_CONNECT] = "keep-alive";
@@ -68,7 +71,7 @@ bool RequestProcessor::process_request(void)
 void RequestProcessor::get_method_handler(void)
 {
     struct stat file_info;
-    
+
     if (stat((*_r_fields)[HR_RURL].data(), &file_info) == 0)
     {
         if (file_info.st_mode & S_IFREG)
@@ -81,6 +84,11 @@ void RequestProcessor::get_method_handler(void)
         }
         else if (file_info.st_mode & S_IFDIR) 
         {
+            if ((*_r_fields)[HR_RURL][(*_r_fields)[HR_RURL].size() - 1] != '/')
+            {
+                (*_s_fields)[HS_LOCATN] = (*_r_fields)[HR_URL] + '/';
+                throw response_status(SC_301);
+            }
             std::set<std::string>::iterator it = _location->_index.begin();
             for (; it != _location->_index.end(); ++it)
             {
@@ -113,7 +121,7 @@ void RequestProcessor::delete_method_handler(void)
     
     if (stat((*_r_fields)[HR_RURL].data(), &file_info) == 0)
     {
-        if (file_info.st_mode & S_IFREG)
+        if (file_info.st_mode & S_IFREG || file_info.st_mode & S_IFDIR)
         {
             int rc = std::remove((*_r_fields)[HR_RURL].data());
             if (rc == 0) 
@@ -132,27 +140,14 @@ void RequestProcessor::delete_method_handler(void)
 
 void RequestProcessor::get_response_body(const char *file)
 {
-    struct stat file_info;
-    struct tm   tm;
-    
-    if (stat((*_r_fields)[HR_RURL].data(), &file_info) == 0)
-    {
-        (*_s_fields)[HS_LTMODIF] = get_date(file_info.st_mtimespec.tv_sec);
-        if (is_etaged_resource(file))
-        {    
-            if (strptime((*_r_fields)[HR_IFMODIF].data(), "%a, %d %b %Y %H:%M:%S %Z", &tm) != NULL) 
-            {
-                time_t if_modif = mktime(&tm);
-                if (if_modif >= file_info.st_mtimespec.tv_sec)
-                    throw response_status(SC_304);
-            }
-        }
-    }
+    if (is_etaged_resource(file))
+        throw response_status(SC_304);
+                    
     mmap_file(*_response, file);
     
     (*_s_fields)[HS_STCODE] = SC_200;
 
-    (*_s_fields)[HS_CNTLEN] = std::to_string(_response->_body_len);
+    (*_s_fields)[HS_CNTLEN] = to_str(_response->_body_len);
     (*_s_fields)[HS_CTYP] = get_content_type(file);
 }
 
@@ -174,7 +169,7 @@ void RequestProcessor::get_response_cgi_body(const char *file)
     }
 
     size_t clen = _response->_body_len - pos;
-    (*_s_fields)[HS_CNTLEN] = std::to_string(clen);
+    (*_s_fields)[HS_CNTLEN] = to_str(clen);
     (*_s_fields)[HS_CTYP] = get_content_type(file);
 }
 
@@ -211,7 +206,7 @@ void RequestProcessor::check_is_allowed_method(void)
 
 bool RequestProcessor::is_etaged_resource(const char* file)
 {
-    std::unordered_map<std::string, std::string>::iterator it;
+    std::map<std::string, std::string>::iterator it;
 
     it = etags.find(file);
     if (it == etags.end())
@@ -221,6 +216,19 @@ bool RequestProcessor::is_etaged_resource(const char* file)
     }
     else
     {
+        struct stat file_info;
+        struct tm   tm;
+        
+        if (stat((*_r_fields)[HR_RURL].data(), &file_info) == 0)
+        {
+            (*_s_fields)[HS_LTMODIF] = get_date(file_info.st_mtimespec.tv_sec);
+            if (strptime((*_r_fields)[HR_IFMODIF].data(), "%a, %d %b %Y %H:%M:%S %Z", &tm) != NULL)
+            {
+                time_t if_modif = mktime(&tm);
+                if (if_modif < file_info.st_mtimespec.tv_sec)
+                    ft_hash(file, etags[file]);
+            }
+        }
         if ((*_r_fields)[HR_ETAG] == it->second)
         {
             (*_s_fields)[HS_ETAG] = std::string("\"") + it->second + "\"";
@@ -244,7 +252,7 @@ void RequestProcessor::list_directory(void)
     dir = opendir((*_r_fields)[HR_RURL].data());
     if (!dir)
         throw server_error(std::string("error: opendir: ") + ::strerror(errno));
-    if ((*_r_fields)[HR_URL].back() != '/')
+    if ((*_r_fields)[HR_URL][(*_r_fields)[HR_URL].size() - 1] != '/')
         (*_r_fields)[HR_URL].push_back('/');
     (*_s_fields)[HS_AUTONDX].assign("<!DOCTYPE html><html><head></head><body>");
     (*_s_fields)[HS_AUTONDX].append("<h1>Directory listing for ");
@@ -264,5 +272,5 @@ void RequestProcessor::list_directory(void)
     (*_s_fields)[HS_AUTONDX].append("</ul><hr></body></html>");
     closedir(dir);
     (*_s_fields)[HS_STCODE] = SC_200;
-    (*_s_fields)[HS_CNTLEN] = std::to_string((*_s_fields)[HS_AUTONDX].size());
+    (*_s_fields)[HS_CNTLEN] = to_str((*_s_fields)[HS_AUTONDX].size());
 }

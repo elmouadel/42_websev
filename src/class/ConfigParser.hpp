@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 21:59:21 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/11 13:27:53 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/12 11:18:02 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 # include <string>
 # include <cstring>
+# include <cstdlib>
 # include <fstream>
 # include <iostream>
 # include "../incl/exceptions.hpp"

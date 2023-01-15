@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 11:27:06 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/09 10:48:03 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/12 16:14:46 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ ServerLauncher::~ServerLauncher()
 
 void ServerLauncher::core_server_loop(void)
 {
-    size_t                      nev;
+    int                         nev;
     std::vector<struct kevent>  o_events;
     
     o_events.resize(NB_OEVENTS);
@@ -41,10 +41,10 @@ void ServerLauncher::core_server_loop(void)
     {
         nev =  this->kevent(o_events);
         
-        for (size_t i = 0; i < nev; ++i)
+        for (size_t i = 0; i < static_cast<size_t>(nev); ++i)
         {
-            int     fd = o_events[i].ident;
-            int     ndata = o_events[i].data;
+            int     fd = static_cast<int>(o_events[i].ident);
+            int     ndata = static_cast<int>(o_events[i].data);
             void*   handler = o_events[i].udata;
             
             if (o_events[i].flags & EV_ERROR || o_events[i].flags & EV_EOF)
@@ -242,6 +242,8 @@ void ServerLauncher::bind(ServerSet &serv)
     addr.sin_addr.s_addr = inet_addr(serv._address.data());
     if (::bind(_sock_fds.back(), (struct sockaddr*)&addr, sizeof(addr)) < 0)
         throw err_strerror(std::string("bind: "));
+    print_date();
+    std::cout << "Listening on [" << serv._address << ':' << serv._port << ']' << "\033[0m" << std::endl;
 }
 void ServerLauncher::listen(void)
 {
@@ -284,13 +286,14 @@ void ServerLauncher::enable_socket_monitoring(void)
     
     for (size_t i = 0; i < _sock_fds.size(); ++i)
     {
-        i_events.push_back((struct kevent){});
+        struct kevent tmp = {};
+        i_events.push_back(tmp);
         EV_SET(&i_events.back(), _sock_fds[i], EVFILT_READ, EV_ADD , 0, 0, NULL);
     }
-    ::kevent(_kq, i_events.data(), i_events.size(), NULL, 0, 0);
+    ::kevent(_kq, &i_events[0], static_cast<int>(i_events.size()), NULL, 0, 0);
 }
 
-void ServerLauncher::toggle_event(size_t fd, int16_t filter, uint16_t flags, void *udata)
+void ServerLauncher::toggle_event(int fd, int16_t filter, uint16_t flags, void *udata)
 {
     struct kevent event;
 
@@ -305,7 +308,7 @@ void ServerLauncher::initiate_timeout(int fd)
 
     timeout.tv_sec = 70; 
     timeout.tv_nsec = 0;
-    time_limit = timeout.tv_sec * 1000 + timeout.tv_nsec / 1000000;
+    time_limit = static_cast<size_t>(timeout.tv_sec) * 1000 + static_cast<size_t>(timeout.tv_nsec) / 1000000;
 
     EV_SET(&event, fd, EVFILT_TIMER, EV_ADD | EV_CLEAR, 0, time_limit, nullptr);
     ::kevent(_kq, &event, 1, NULL, 0, 0);

@@ -6,13 +6,14 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/15 22:44:40 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/11 13:34:47 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/12 10:33:58 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef REQUEST_PROCESSOR_HPP
 #define REQUEST_PROCESSOR_HPP
 
+# include <map>
 # include <vector>
 # include <string>
 # include <cstring>
@@ -22,7 +23,6 @@
 # include <fcntl.h>
 # include <sys/mman.h>
 # include <sys/stat.h>
-# include <unordered_map>
 # include "../incl/utils.hpp"
 # include "../incl/macros.hpp"
 # include "../incl/exceptions.hpp"
@@ -31,7 +31,7 @@
 
 class RequestProcessor 
 {
-    static std::unordered_map<std::string, std::string> etags;
+    static std::map<std::string, std::string> etags;
     
     Response*                   _response;
     std::vector<std::string>*   _r_fields;

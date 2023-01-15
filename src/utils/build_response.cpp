@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/15 21:42:10 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/11 11:17:28 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/12 14:31:12 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,125 +23,125 @@
 
 std::map<std::string, std::string> mime_map;
 
-bool init_mime_map(std::map<std::string, std::string> &mime_map)
+bool init_mime_map(std::map<std::string, std::string> &mime_map_)
 {
-        mime_map["html"] = "text/html";
-        mime_map["htm"] = "text/html";
-        mime_map["shtml"] = "text/html";
-        mime_map["css"] = "text/css";
-        mime_map["xml"] = "text/xml";
-        mime_map["gif"] = "image/gif";
-        mime_map["jpeg"] = "image/jpeg";
-        mime_map["jpg"] = "image/jpeg";
-        mime_map["js"] = "application/javascript";
-        mime_map["atom"] = "application/atom+xml";
-        mime_map["rss"] = "application/rss+xml";
+        mime_map_["html"] = "text/html";
+        mime_map_["htm"] = "text/html";
+        mime_map_["shtml"] = "text/html";
+        mime_map_["css"] = "text/css";
+        mime_map_["xml"] = "text/xml";
+        mime_map_["gif"] = "image/gif";
+        mime_map_["jpeg"] = "image/jpeg";
+        mime_map_["jpg"] = "image/jpeg";
+        mime_map_["js"] = "application/javascript";
+        mime_map_["atom"] = "application/atom+xml";
+        mime_map_["rss"] = "application/rss+xml";
 
-        mime_map["mml"] = "text/mathml";
-        mime_map["txt"] = "text/plain";
-        mime_map["jad"] = "text/vnd.sun.j2me.app-descriptor";
-        mime_map["wml"] = "text/vnd.wap.wml";
-        mime_map["htc"] = "text/x-component";
+        mime_map_["mml"] = "text/mathml";
+        mime_map_["txt"] = "text/plain";
+        mime_map_["jad"] = "text/vnd.sun.j2me.app-descriptor";
+        mime_map_["wml"] = "text/vnd.wap.wml";
+        mime_map_["htc"] = "text/x-component";
 
-        mime_map["png"] = "image/png";
-        mime_map["svg"] = "image/svg+xml";
-        mime_map["svgz"] = "image/svg+xml";
-        mime_map["tif"] = "image/tiff";
-        mime_map["tiff"] = "image/tiff";
-        mime_map["wbmp"] = "image/vnd.wap.wbmp";
-        mime_map["webp"] = "image/webp";
-        mime_map["ico"] = "image/x-icon";
-        mime_map["jng"] = "image/x-jng";
-        mime_map["bmp"] = "image/x-ms-bmp";
+        mime_map_["png"] = "image/png";
+        mime_map_["svg"] = "image/svg+xml";
+        mime_map_["svgz"] = "image/svg+xml";
+        mime_map_["tif"] = "image/tiff";
+        mime_map_["tiff"] = "image/tiff";
+        mime_map_["wbmp"] = "image/vnd.wap.wbmp";
+        mime_map_["webp"] = "image/webp";
+        mime_map_["ico"] = "image/x-icon";
+        mime_map_["jng"] = "image/x-jng";
+        mime_map_["bmp"] = "image/x-ms-bmp";
 
-        mime_map["woff"] = "font/woff";
-        mime_map["woff2"] = "font/woff2";
+        mime_map_["woff"] = "font/woff";
+        mime_map_["woff2"] = "font/woff2";
 
-        mime_map["jar"] = "application/java-archive";
-        mime_map["war"] = "application/java-archive";
-        mime_map["ear"] = "application/java-archive";
-        mime_map["json"] = "application/json";
-        mime_map["hqx"] = "application/mac-binhex40";
-        mime_map["doc"] = "application/msword";
-        mime_map["pdf"] = "application/pdf";
-        mime_map["ps"] = "application/postscript";
-        mime_map["eps"] = "application/postscript";
-        mime_map["ai"] = "application/postscript";
-        mime_map["rtf"] = "application/rtf";
-        mime_map["m3u8"] = "application/vnd.apple.mpegurl";
-        mime_map["kml"] = "application/vnd.google-earth.kml+xml";
-        mime_map["kmz"] = "application/vnd.google-earth.kmz";
-        mime_map["xls"] = "application/vnd.ms-excel";
-        mime_map["eot"] = "application/vnd.ms-fontobject";
-        mime_map["ppt"] = "application/vnd.ms-powerpoint";
-        mime_map["odg"] = "application/vnd.oasis.opendocument.graphics";
-        mime_map["odp"] = "application/vnd.oasis.opendocument.presentation";
-        mime_map["ods"] = "application/vnd.oasis.opendocument.spreadsheet";
-        mime_map["odt"] = "application/vnd.oasis.opendocument.text";
+        mime_map_["jar"] = "application/java-archive";
+        mime_map_["war"] = "application/java-archive";
+        mime_map_["ear"] = "application/java-archive";
+        mime_map_["json"] = "application/json";
+        mime_map_["hqx"] = "application/mac-binhex40";
+        mime_map_["doc"] = "application/msword";
+        mime_map_["pdf"] = "application/pdf";
+        mime_map_["ps"] = "application/postscript";
+        mime_map_["eps"] = "application/postscript";
+        mime_map_["ai"] = "application/postscript";
+        mime_map_["rtf"] = "application/rtf";
+        mime_map_["m3u8"] = "application/vnd.apple.mpegurl";
+        mime_map_["kml"] = "application/vnd.google-earth.kml+xml";
+        mime_map_["kmz"] = "application/vnd.google-earth.kmz";
+        mime_map_["xls"] = "application/vnd.ms-excel";
+        mime_map_["eot"] = "application/vnd.ms-fontobject";
+        mime_map_["ppt"] = "application/vnd.ms-powerpoint";
+        mime_map_["odg"] = "application/vnd.oasis.opendocument.graphics";
+        mime_map_["odp"] = "application/vnd.oasis.opendocument.presentation";
+        mime_map_["ods"] = "application/vnd.oasis.opendocument.spreadsheet";
+        mime_map_["odt"] = "application/vnd.oasis.opendocument.text";
 
-        mime_map["pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-        mime_map["xlsx"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        mime_map["docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        mime_map_["pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+        mime_map_["xlsx"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        mime_map_["docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
-        mime_map["wmlc"] = "application/vnd.wap.wmlc";
-        mime_map["7z"] = "application/x-7z-compressed";
-        mime_map["cco"] = "application/x-cocoa";
-        mime_map["jardiff"] = "application/x-java-archive-diff";
-        mime_map["jnlp"] = "application/x-java-jnlp-file";
-        mime_map["run"] = "application/x-makeself";
-        mime_map["pl"] = "application/x-perl";
-        mime_map["pm"] = "application/x-perl";
-        mime_map["prc"] = "application/x-pilot";
-        mime_map["pdb"] = "application/x-pilot";
-        mime_map["rar"] = "application/x-rar-compressed";
-        mime_map["rpm"] = "application/x-redhat-package-manager";
-        mime_map["sea"] = "application/x-sea";
-        mime_map["swf"] = "application/x-shockwave-flash";
-        mime_map["sit"] = "application/x-stuffit";
-        mime_map["tcl"] = "application/x-tcl";
-        mime_map["tk"] = "application/x-tcl";
-        mime_map["der"] = "application/x-x509-ca-cert";
-        mime_map["pem"] = "application/x-x509-ca-cert";
-        mime_map["crt"] = "application/x-x509-ca-cert";
-        mime_map["xpi"] = "application/x-xpinstall";
-        mime_map["xhtml"] = "application/xhtml+xml";
-        mime_map["xspf"] = "application/xspf+xml";
-        mime_map["zip"] = "application/zip";
+        mime_map_["wmlc"] = "application/vnd.wap.wmlc";
+        mime_map_["7z"] = "application/x-7z-compressed";
+        mime_map_["cco"] = "application/x-cocoa";
+        mime_map_["jardiff"] = "application/x-java-archive-diff";
+        mime_map_["jnlp"] = "application/x-java-jnlp-file";
+        mime_map_["run"] = "application/x-makeself";
+        mime_map_["pl"] = "application/x-perl";
+        mime_map_["pm"] = "application/x-perl";
+        mime_map_["prc"] = "application/x-pilot";
+        mime_map_["pdb"] = "application/x-pilot";
+        mime_map_["rar"] = "application/x-rar-compressed";
+        mime_map_["rpm"] = "application/x-redhat-package-manager";
+        mime_map_["sea"] = "application/x-sea";
+        mime_map_["swf"] = "application/x-shockwave-flash";
+        mime_map_["sit"] = "application/x-stuffit";
+        mime_map_["tcl"] = "application/x-tcl";
+        mime_map_["tk"] = "application/x-tcl";
+        mime_map_["der"] = "application/x-x509-ca-cert";
+        mime_map_["pem"] = "application/x-x509-ca-cert";
+        mime_map_["crt"] = "application/x-x509-ca-cert";
+        mime_map_["xpi"] = "application/x-xpinstall";
+        mime_map_["xhtml"] = "application/xhtml+xml";
+        mime_map_["xspf"] = "application/xspf+xml";
+        mime_map_["zip"] = "application/zip";
 
-        mime_map["bin"] = "application/octet-stream";
-        mime_map["exe"] = "application/octet-stream";
-        mime_map["dll"] = "application/octet-stream";
-        mime_map["deb"] = "application/octet-stream";
-        mime_map["dmg"] = "application/octet-stream";
-        mime_map["iso"] = "application/octet-stream";
-        mime_map["img"] = "application/octet-stream";
-        mime_map["msi"] = "application/octet-stream";
-        mime_map["msp"] = "application/octet-stream";
-        mime_map["msm"] = "application/octet-stream";
+        mime_map_["bin"] = "application/octet-stream";
+        mime_map_["exe"] = "application/octet-stream";
+        mime_map_["dll"] = "application/octet-stream";
+        mime_map_["deb"] = "application/octet-stream";
+        mime_map_["dmg"] = "application/octet-stream";
+        mime_map_["iso"] = "application/octet-stream";
+        mime_map_["img"] = "application/octet-stream";
+        mime_map_["msi"] = "application/octet-stream";
+        mime_map_["msp"] = "application/octet-stream";
+        mime_map_["msm"] = "application/octet-stream";
 
-        mime_map["mid"] = "audio/midi";
-        mime_map["midi"] = "audio/midi";
-        mime_map["kar"] = "audio/midi";
-        mime_map["mp3"] = "audio/mpeg";
-        mime_map["ogg"] = "audio/ogg";
-        mime_map["m4a"] = "audio/x-m4a";
-        mime_map["ra"] = "audio/x-realaudio";
+        mime_map_["mid"] = "audio/midi";
+        mime_map_["midi"] = "audio/midi";
+        mime_map_["kar"] = "audio/midi";
+        mime_map_["mp3"] = "audio/mpeg";
+        mime_map_["ogg"] = "audio/ogg";
+        mime_map_["m4a"] = "audio/x-m4a";
+        mime_map_["ra"] = "audio/x-realaudio";
 
-        mime_map["3gpp"] = "video/3gpp";
-        mime_map["3gp"] = "video/3gpp";
-        mime_map["ts"] = "video/mp2t";
-        mime_map["mp4"] = "video/mp4";
-        mime_map["mpeg"] = "video/mpeg";
-        mime_map["mpg"] = "video/mpeg";
-        mime_map["mov"] = "video/quicktime";
-        mime_map["webm"] = "video/webm";
-        mime_map["flv"] = "video/x-flv";
-        mime_map["m4v"] = "video/x-m4v";
-        mime_map["mng"] = "video/x-mng";
-        mime_map["asx"] = "video/x-ms-asf";
-        mime_map["asf"] = "video/x-ms-asf";
-        mime_map["wmv"] = "video/x-ms-wmv";
-        mime_map["avi"] = "video/x-msvideo";
+        mime_map_["3gpp"] = "video/3gpp";
+        mime_map_["3gp"] = "video/3gpp";
+        mime_map_["ts"] = "video/mp2t";
+        mime_map_["mp4"] = "video/mp4";
+        mime_map_["mpeg"] = "video/mpeg";
+        mime_map_["mpg"] = "video/mpeg";
+        mime_map_["mov"] = "video/quicktime";
+        mime_map_["webm"] = "video/webm";
+        mime_map_["flv"] = "video/x-flv";
+        mime_map_["m4v"] = "video/x-m4v";
+        mime_map_["mng"] = "video/x-mng";
+        mime_map_["asx"] = "video/x-ms-asf";
+        mime_map_["asf"] = "video/x-ms-asf";
+        mime_map_["wmv"] = "video/x-ms-wmv";
+        mime_map_["avi"] = "video/x-msvideo";
         return (1);
 }
 
@@ -220,14 +220,14 @@ void build_header(std::string &header, std::vector<std::string> &s_fields)
         header.append(s_fields[HS_AUTONDX]);
 }
 
-void build_body_error(Response &response, std::vector<std::string> &s_fields, std::map<int, std::string> err_page)
+void build_body_error(Response &response, std::vector<std::string> &s_fields, std::map<int, std::string> &err_page)
 {
-    std::string &file = err_page[stoi(s_fields[HS_STCODE].substr(0, 3))];
+    std::string &file = err_page[::strtoul(s_fields[HS_STCODE].substr(0, 3).data(), nullptr, 10)];
     
     if (file.empty())
         return;
     mmap_file(response, file.data());
-    s_fields[HS_CNTLEN] = std::to_string(response._body_len);
+    s_fields[HS_CNTLEN] = to_str(response._body_len);
     s_fields[HS_CTYP] = get_content_type(file.data());
 }
 
@@ -256,15 +256,22 @@ void mmap_file(Response &response, const char *file)
     if (fd == -1) 
         throw server_error(std::string("error: open: ") + ::strerror(errno));
     if (fstat(fd, &st) < 0)
+    {
+        close(fd);
         throw server_error(std::string("error: fstat: ") + ::strerror(errno));
+    }
     response._body_len = st.st_size;
-    if (!response._body_len)
-        return;
-    response._body = (char*)mmap(NULL, response._body_len, PROT_READ, MAP_PRIVATE, fd, 0);
+    if (response._body_len)
+    {
+        response._body = (char*)mmap(NULL, response._body_len, PROT_READ, MAP_PRIVATE, fd, 0);
+        if (response._body == MAP_FAILED)
+        {
+            close(fd);
+            throw server_error(std::string("error: mmap: ") + ::strerror(errno));
+        }
+        response._is_mapped = true;
+    }
     close(fd);
-    if (response._body == MAP_FAILED)
-        throw server_error(std::string("error: mmap: ") + ::strerror(errno));
-    response._is_mapped = true;
 }
 
 void get_status_from_cgi_response(const std::string &cgi_head, std::string &s_status)

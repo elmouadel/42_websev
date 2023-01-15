@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 12:10:10 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/11 12:19:11 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/15 10:31:31 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,14 +54,12 @@ void RecvHandler::init_variables(void)
     delete _unchunker;
     _unchunker = nullptr;
     _s_fields[HS_LCRLF] = "\r\n";
-    _location = &get_matched_server(_servers)->_locations[0];
 }
 /******************************************************************************/
 /*                              getters-setters                               */
 /******************************************************************************/
 ServerSet *RecvHandler::get_matched_server(std::vector<ServerSet*> *server_list)
 {
-
     if (server_list->size() != 1)
     {
         for (size_t i = 0; i < server_list->size(); ++i)
@@ -91,8 +89,9 @@ LocationSet *RecvHandler::get_matched_location(std::vector<ServerSet*> *server_l
                 if (!server->_locations[i]._redirect.first.empty())
                 {
                     _r_fields[HR_URL].erase(0, server->_locations[i]._url_path.length());
+                    if (server->_locations[i]._redirect.first[server->_locations[i]._redirect.first.size() - 1]== '/')
+                        server->_locations[i]._redirect.first.pop_back();
                     _r_fields[HR_URL].insert(0, server->_locations[i]._redirect.first);
-                    
                     _s_fields[HS_LOCATN] = _r_fields[HR_URL];
                     if (server->_locations[i]._redirect.second == 301)
                         throw response_status(SC_301);
@@ -109,13 +108,12 @@ LocationSet *RecvHandler::get_matched_location(std::vector<ServerSet*> *server_l
             pos = 0;
         url = url.substr(0, pos);
     }
-    return (&server->_locations[0]);
+    return (&server->_locations.front());
 }
 
 void RecvHandler::set_servers(std::vector<ServerSet*>* _sv)
 {
     _servers = _sv;
-    _location = &get_matched_server(_servers)->_locations[0];
 }
 void RecvHandler::set_response(Response* _sv)
 {
@@ -194,8 +192,8 @@ void RecvHandler::recv_head(int fd, int &ndata)
             RequestParser request_parser(&_rhead, &_r_fields);
             
             request_parser.parse_first_line();
-            _location = get_matched_location(_servers);
             request_parser.parse_header();
+            _location = get_matched_location(_servers);
             _is_close = _r_fields[HR_CONNECT] == "close";
             
             RequestProcessor request_processor(_response, &_r_fields, &_s_fields, _location);
@@ -208,6 +206,8 @@ void RecvHandler::recv_head(int fd, int &ndata)
         }
         catch (const server_error &e)
         {
+            if (!_location)
+                _location = get_matched_location(_servers);
             std::cerr << e.what() << '\n';
             _s_fields[HS_STCODE] = SC_500;
             build_body_error(*_response, _s_fields, _location->_err_page);
@@ -216,6 +216,8 @@ void RecvHandler::recv_head(int fd, int &ndata)
         }
         catch (const response_status &e)
         {
+            if (!_location)
+                _location = get_matched_location(_servers);
             _s_fields[HS_STCODE] = e.what();
             build_body_error(*_response, _s_fields, _location->_err_page);
             build_header(_response->_head, _s_fields);
@@ -297,7 +299,7 @@ void RecvHandler::recv_chunked_body(int fd, int ndata)
     int  rc = _unchunker->parse_chunked_body(chunk);
     if (rc == -1)
     {
-        _r_fields[HR_CNTLEN] = std::to_string(_rbody.length());
+        _r_fields[HR_CNTLEN] = to_str(_rbody.length());
         _is_exec = true;
         return;
     }
@@ -342,7 +344,7 @@ void RecvHandler::build_post_response(void)
             }
                 
             size_t clen = _response->_body_len - pos;
-            _s_fields[HS_CNTLEN] = std::to_string(clen);
+            _s_fields[HS_CNTLEN] = to_str(clen);
             build_header(_response->_head, _s_fields);
             _is_done = true;
         }

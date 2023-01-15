@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 11:27:26 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/11 13:34:47 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/12 13:45:34 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,8 @@
 # include "../class/RecvHandler.hpp"
 # include "../class/SendHandler.hpp"
 
-#define RECV_CAST(handler) ((RecvHandler*)handler)
-#define SEND_CAST(handler) ((SendHandler*)handler)
+#define RECV_CAST(handler) (static_cast<RecvHandler*>(handler))
+#define SEND_CAST(handler) (static_cast<SendHandler*>(handler))
 
 class ServerLauncher
 {
@@ -61,7 +61,7 @@ class ServerLauncher
         void    enable_socket_monitoring(void);
         int     kevent(std::vector<struct kevent>&);
         bool    recv_event_handler(int fd, int ndata, RecvHandler* handler); 
-        void    toggle_event(size_t fd, int16_t filter, uint16_t flags, void *udata = nullptr);
+        void    toggle_event(int fd, int16_t filter, uint16_t flags, void *udata = nullptr);
 };
 
 #endif

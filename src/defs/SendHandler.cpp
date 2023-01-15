@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 12:07:14 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/11 14:12:08 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/12 11:36:23 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ SendHandler::~SendHandler()
 void SendHandler::set_response(Response* sv)
 {
     _response = sv;
-    _buf_switch = (char*)_response->_head.data();
+    _buf_switch = _response->_head.data();
     _buf_switch_len = _response->_head.length();
 }
 bool SendHandler::get_is_done(void)

@@ -76,7 +76,7 @@ struct Response
     ~Response() 
     {
         if (_is_mapped)
-            munmap((void*)_body, _body_len);
+            munmap(static_cast<void*>(_body), _body_len);
     }
 };
 

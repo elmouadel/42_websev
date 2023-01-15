@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/22 15:36:25 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/08 22:51:16 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/12 16:12:22 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,13 @@ size_t is_str_start_with(std::string &str, const std::string &tokens)
     if (j == tokens.length())
         return (i);
     return (false);
+}
+
+std::string to_str(size_t value)
+{
+    char buffer[32];
+    sprintf(buffer, "%lu", value);
+    return (std::string(buffer));
 }
 
 size_t get_first_word(const std::string &str, std::string &key_word)
@@ -136,7 +143,7 @@ std::string get_file_extention(const std::string &file)
     return (std::string());
 }
 
-bool is_cgi(std::vector<std::string> r_fields, std::map<std::string, std::string> cgi)
+bool is_cgi(std::vector<std::string> &r_fields, std::map<std::string, std::string> &cgi)
 {
     std::string ext;
     
@@ -155,10 +162,11 @@ bool is_cgi(std::vector<std::string> r_fields, std::map<std::string, std::string
 std::string	get_date(time_t  now)
 {
     char    buf[100];
-    tm      *_tm = localtime(&now);
+    tm      *_tm = gmtime(&now);
     
-    strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S %Z", _tm);
-    return (std::string(buf));
+    strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S ", _tm);
+    
+    return (std::string(buf) + "GMT");
 }
 
 void    ft_hash(const char* file, std::string &etag)
@@ -176,4 +184,15 @@ void    ft_hash(const char* file, std::string &etag)
     ss << "-";
     ss << std::hex << value;
     etag = ss.str();
+}
+
+void print_date(void)
+{
+    std::time_t now = std::time(nullptr);
+    std::tm tm = *std::gmtime(&now);
+    
+    std::cout << std::setfill('0') << "\033[34m" << '[' 
+    << std::setw(2) << tm.tm_hour << ':'
+    << std::setw(2) << tm.tm_min << ':'
+    << std::setw(2) << tm.tm_sec << "] ";
 }

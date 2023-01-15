@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/14 12:07:28 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/11 13:34:47 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/12 11:36:08 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,8 +29,8 @@ class SendHandler
     bool        _is_close;
     size_t      _wlength;
     Response*   _response;
-    char*       _buf_switch;
-    size_t      _buf_switch_len;;
+    const char* _buf_switch;
+    size_t      _buf_switch_len;
     
     public:
         SendHandler();  

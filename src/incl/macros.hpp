@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/29 21:39:49 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/11 10:45:20 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/12 14:28:25 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,10 @@
 /******************************************************************************/
 /*                               general macros                               */
 /******************************************************************************/
-#define BUF_SIZE 1024
-#define LISN_BACKLOG 128
-#define NB_OEVENTS  256
-#define URL_LIMIT 1024
+#define BUF_SIZE        1024
+#define URL_LIMIT       1024
+#define NB_OEVENTS      256
+#define LISN_BACKLOG    128
 
 /******************************************************************************/
 /*                         HTTP request header fields                         */
@@ -75,27 +75,22 @@
 /******************************************************************************/
 /*                              CGI Variable Name                             */
 /******************************************************************************/
-#define ENV_CONTENT_TYPE 0
-#define ENV_CONTENT_LENGTH 1
-#define ENV_PATH_INFO 2
-#define ENV_QUERY_STRING 3
-#define ENV_REMOTE_ADDR 4
-#define ENV_REMOTE_PORT 5
-#define ENV_REQUEST_METHOD 6
-#define ENV_SCRIPT_FILENAME 7
-#define ENV_SCRIPT_NAME 8
-#define ENV_SERVER_NAME 9
-#define ENV_SERVER_PORT 10
-#define ENV_SERVER_SOFTWARE 11
-#define ENV_SERVER_PROTOCOL 12
-#define ENV_GATEWAY_INTERFACE 13
-#define ENV_REDIRECT_STATUS 13
-#define ENV_PATH_TRANSLATED 14
-#define ENV_UPLOAD_DIR 15
-#define ENV_PHP_INI_SCAN_DIR 16
-#define ENV_HTTP_COOKIE 17
-
-
+#define ENV_CONTENT_TYPE       0   
+#define ENV_CONTENT_LENGTH     1
+#define ENV_PATH_INFO          2
+#define ENV_PATH_TRANSLATED    3
+#define ENV_UPLOAD_DIR         4
+#define ENV_QUERY_STRING       5
+#define ENV_REQUEST_METHOD     6
+#define ENV_SCRIPT_FILENAME    7
+#define ENV_SCRIPT_NAME        8
+#define ENV_SERVER_NAME        9
+#define ENV_SERVER_SOFTWARE    10
+#define ENV_SERVER_PROTOCOL    11   
+#define ENV_GATEWAY_INTERFACE  12     
+#define ENV_HTTP_COOKIE        13
+#define ENV_REDIRECT_STATUS    14
+#define ENV_PHP_INI_SCAN_DIR   15  
 
 
 #endif

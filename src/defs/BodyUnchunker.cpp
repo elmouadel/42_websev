@@ -6,7 +6,7 @@
 /*   By: eabdelha <eabdelha@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/04 10:14:55 by eabdelha          #+#    #+#             */
-/*   Updated: 2023/01/11 13:43:06 by eabdelha         ###   ########.fr       */
+/*   Updated: 2023/01/12 12:26:51 by eabdelha         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,9 +38,9 @@ void BodyUnchunker::extract_chunk_len(std::string& chunk)
     if (pos == std::string::npos)
         throw return_unvalid();
     chunk_len_str = chunk.substr(_begin_h, pos - _begin_h);
-    if (chunk_len_str.back() == '\r')
+    if (chunk_len_str[chunk_len_str.size() - 1] == '\r')
         chunk_len_str.pop_back();
-    _chunk_len = std::stoi(chunk_len_str, 0, 16);
+    _chunk_len = ::strtoul(chunk_len_str.data(), nullptr, 16);
     if (!_chunk_len)
     {
         _is_done = true;
